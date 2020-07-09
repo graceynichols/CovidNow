@@ -98,7 +98,63 @@ A coronavirus news app. Users can get current information regarding case counts,
 ### [BONUS] Interactive Prototype
 
 ## Schema 
-[This section will be completed in Unit 9]
+Data Models
+- User
+    Username (String)
+    Password (String)
+    Email (String)
+    Location
+        Denotes users current location, used to determine their article feed
+    (Optional) Profile Pic (ParseFile)
+- Article
+    Headline (String)
+    Source (String)
+    Date/ Time (Date)
+        Date/time article was posted
+    Summary (String)
+        Only visible in article details view
+    Link (String)
+        Link to article’s webpage
+- Location
+    Coordinates
+    Location ID (int or long depending on what’s needed)
+        Location ID for google maps, this is how I will identify and look up locations on the backend
+    Address (String)
+        For the location details view
+    Name (String)
+        For the location details view
+    Hotspot status (boolean)
+        Whether this location has been designated a “hot spot” in the last two hours
+    Last hotspot status (Date/time)
+        The date and time the last time this place has been designated as a hotspot
+    Photo (ParseFile)
+        Most recent user uploaded photo of the location
+Outlined Network Requests
+    Profile Tab
+        Login Screen
+            (Read/GET) Find user in parse database using username and password
+        Signup
+            Create/POST new user object in parse database recording username, password, email, and (optional feature) profile picture
+        Profile Screen
+            Read/GET Current user’s name, location, and (optional) profile picture
+    Home tab
+        Main Article Screen
+            Read/GET Current user’s location
+            Coronavirus News API: Read/Get list of relevant articles, only store locally
+            Article Detail View
+                Display stored article, no Parse request
+Map tab
+    Map Search Screen
+        Read/Get user’s current location
+        Use Google Maps + Google Places API for search function
+        Location Detail View
+            Read/Get Location details (Hotspot status, name, address, photo) from Parse
+            Compose Review Screen
+                Update/PUT “Hot spot” status for location
+                Update/PUT Update image for location
+                Camera View
+                Create/POST Create new image for location
+
 ### Models
 [Add table of models]
 ### Networking

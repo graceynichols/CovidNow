@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-
     <application
         android:name=".ParseApplication"
         android:allowBackup="true"
@@ -30,10 +29,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".MapsActivity" />
-
+        <activity android:name=".activity.MapsActivity" />
+        <activity android:name=".activity.MainActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.LoginActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

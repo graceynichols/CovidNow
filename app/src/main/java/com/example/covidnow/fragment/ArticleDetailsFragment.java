@@ -1,5 +1,7 @@
 package com.example.covidnow.fragment;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -72,5 +74,15 @@ public class ArticleDetailsFragment extends Fragment {
             lp.addRule(RelativeLayout.BELOW, ivImage.getId());
             Glide.with(this).load(article.getImageUrl()).centerCrop().into(ivImage);
         }
+
+        // Clicking headline takes you to article on internet
+        tvHeadline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri uri = Uri.parse(article.getUrl());
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
+            }
+        });
     }
 }

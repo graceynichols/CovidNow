@@ -1,8 +1,10 @@
 package com.example.covidnow.fragment;
 
+import android.Manifest;
 import android.location.Location;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,39 +16,53 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.codepath.asynchttpclient.AsyncHttpClient;
+import com.codepath.asynchttpclient.RequestParams;
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.Article;
+import com.example.covidnow.ArticlesAdapter;
 import com.example.covidnow.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Headers;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.RuntimePermissions;
 
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
+
+@RuntimePermissions
 public class HomeFragment extends Fragment {
     private static final String TAG = "PostsFragment";
+    private static final String NEWS_URL = "https://api.smartable.ai/coronavirus/news/";
+    private static final String CASES_URL = "https://api.smartable.ai/coronavirus/stats/";
+    private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
     private static final int POST_LIMIT = 20;
-    private RecyclerView rvPosts;
-    protected PostsAdapter adapter;
-    protected List<Article> allPosts;
-    private ProgressBar pb;
-
-    private SupportMapFragment mapFragment;
-    private String FIND_PLACE_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
-    private GoogleMap map;
-    private LocationRequest mLocationRequest;
+    private RecyclerView rvArticles;
+    private TextView tvCases;
+    protected ArticlesAdapter adapter;
+    protected List<Article> allArticles;
     Location mCurrentLocation;
-    private long UPDATE_INTERVAL = 60000;  /* 60 secs */
-    private long FASTEST_INTERVAL = 5000; /* 5 secs */
-    public static JsonHttpResponseHandler.JSON location;
-
+    public static JSONObject location;
+    private static String stateName;
     private final static String KEY_LOCATION = "location";
-
 
     public HomeFragment() {
         // Required empty public constructor
@@ -56,7 +72,7 @@ public class HomeFragment extends Fragment {
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_posts, parent, false);
+        return inflater.inflate(R.layout.fragment_home, parent, false);
     }
 
     // This event is triggered soon after onCreateView().
@@ -65,118 +81,200 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        rvPosts = view.findViewById(R.id.rvPosts);
-        pb = view.findViewById(R.id.pbLoading);
+        rvArticles = view.findViewById(R.id.rvArticles);
+        tvCases = view.findViewById(R.id.tvCases);
 
         // Recyclerview setup
-        allPosts = new ArrayList<>();
-        adapter = new PostsAdapter(this, allPosts);
-        rvPosts.setAdapter(adapter);
+        allArticles = new ArrayList<>();
+        adapter = new ArticlesAdapter(this, allArticles);
+        rvArticles.setAdapter(adapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        rvPosts.setLayoutManager(layoutManager);
+        rvArticles.setLayoutManager(layoutManager);
 
         // Add lines between recycler view
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
-        rvPosts.addItemDecoration(itemDecoration);
+        rvArticles.addItemDecoration(itemDecoration);
 
-        // Setup scrollListener for endless scrolling
-        scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to the bottom of the list
-                if (allPosts.size() >= POST_LIMIT) {
-                    pb.setVisibility(ProgressBar.VISIBLE);
-                    loadNextDataFromApi(page);
-                    pb.setVisibility(ProgressBar.INVISIBLE);
-                }
-            }
-        };
-        // Adds the scroll listener to RecyclerView (for endless scrolling)
-        rvPosts.addOnScrollListener(scrollListener);
+        // Retrieve user's current location with permission
+        Log.i(TAG, "Getting current location");
+        HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
 
-        swipeContainer = view.findViewById(R.id.swipeContainer);
-        // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                pb.setVisibility(ProgressBar.VISIBLE);
-                fetchTimelineAsync(0);
-                pb.setVisibility(ProgressBar.INVISIBLE);
-            }
-        });
-        // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
-
-        queryPosts();
     }
 
-    private void loadNextDataFromApi(int page) {
-        // Send an API request to retrieve appropriate paginated data
-        Log.i(TAG, "Loading next data");
-        //  --> Send the request including an offset value (i.e `page`) as a query parameter.
-        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
-        query.include(Post.KEY_USER);
-        query.setLimit(POST_LIMIT);
-        query.addDescendingOrder(Post.KEY_CREATED_KEY);
-        // Make sure to only get posts older than your oldest post
-        query.whereLessThan(Post.KEY_CREATED_KEY, allPosts.get(POST_LIMIT * (page) - 1).getCreatedAt());
-        query.findInBackground(new FindCallback<Post>() {
-            @Override
-            public void done(List<Post> posts, ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "Issue with getting posts", e);
-                    return;
-                }
-                for (Post post : posts) {
-                    Log.i(TAG, "Post: " + post.getDescription() + " Username: " + post.getUser().getUsername());
-                }
-                // Add new data to recycler view
-                allPosts.addAll(posts);
-                Log.i(TAG, "" + allPosts.size());
-                adapter.notifyDataSetChanged();
-                Log.i(TAG, "Query older posts finished");
-            }
-        });
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        HomeFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
-    protected void queryPosts() {
-        pb.setVisibility(ProgressBar.VISIBLE);
-        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+    @SuppressWarnings({"MissingPermission"})
+    @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+    public void getMyLocation() {
+        // Access users current location
+        FusedLocationProviderClient locationClient = getFusedLocationProviderClient(getContext());
+        locationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            Log.i(TAG, "Location: " + location.toString());
+                            getLocationFromCoords(location.getLatitude(), location.getLongitude());
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Error trying to get last GPS location");
+                        e.printStackTrace();
+                    }
+                });
+    }
 
-        // Query the newest 20 posts from Parse
-        query.include(Post.KEY_USER);
-        query.setLimit(POST_LIMIT);
-        query.addDescendingOrder(Post.KEY_CREATED_KEY);
-        query.findInBackground(new FindCallback<Post>() {
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+
+    private void getLocationFromCoords(double x, double y) {
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        String geoUrl = GEOCODE_URL + x + "," + y + "&key=" + getString(R.string.google_maps_key);
+        Log.i(TAG, geoUrl);
+        client.get(geoUrl, new JsonHttpResponseHandler() {
             @Override
-            public void done(List<Post> posts, ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "Issue with getting posts", e);
-                    return;
-                }
-                for (Post post : posts) {
-                    Log.i(TAG, "Post: " + post.getDescription() + " Username: " + post.getUser().getUsername());
-                }
-                // Add data to recyclerview
-                allPosts.addAll(posts);
-                adapter.notifyDataSetChanged();
-                scrollListener.resetState();
-                pb.setVisibility(ProgressBar.INVISIBLE);
-                Log.i(TAG, "Query posts finished");
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, getString(R.string.google_maps_key));
+                Log.i(TAG, "Response" + " " + json.toString());
+                location = json.jsonObject;
+                queryNews();
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+
             }
         });
     }
 
-    public void fetchTimelineAsync(int page) {
-        // Send the network request to fetch the updated data
-        // `client` here is an instance of Android Async HTTP
-        // getHomeTimeline is an example endpoint.
-        adapter.clear();
-        queryPosts();
-        swipeContainer.setRefreshing(false);
+    private void setCaseCount() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("Subscription-Key", "1fddf7e6b3b1498baa17236a3209d659");
+        String casesUrl;
+
+        try {
+            casesUrl = CASES_URL + locationToISO(location);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.i(TAG, "Getting ISO code failed");
+            Toast.makeText(getContext(), "Unable to retrieve stats for current location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Log.i(TAG, "Making request with url: " + casesUrl);
+        client.get(casesUrl, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, "News Response: " + json.toString());
+                try {
+                    String cases = stateName + " Case Count: " +
+                            json.jsonObject.getJSONObject("stats")
+                                    .getString("totalConfirmedCases");
+                    tvCases.setText(cases);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Error retrieving stats for current location");
+                    Toast.makeText(getContext(), "Unable to retrieve stats for current location", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error retrieving stats for current location");
+                Toast.makeText(getContext(), "Unable to retrieve stats for current location", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    protected void queryNews() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("Subscription-Key", "1fddf7e6b3b1498baa17236a3209d659");
+        String newsUrl;
+
+        try {
+            newsUrl = NEWS_URL + locationToISO(location);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.i(TAG, "Getting ISO code failed");
+            Toast.makeText(getContext(), "Unable to retrieve current location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Log.i(TAG, "Making request with url: " + newsUrl);
+        client.get(newsUrl, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, "News Response: " + json.toString());
+                try {
+                    JSONArray news = json.jsonObject.getJSONArray("news");
+                    addNews(news);
+                    adapter.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Error retrieving news for current location");
+                    Toast.makeText(getContext(), "Unable to retrieve news for current location", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error retrieving news for current location");
+                Toast.makeText(getContext(), "Unable to retrieve news for current location", Toast.LENGTH_SHORT).show();
+            }
+        });
+        Log.i(TAG, "Query articles finished");
+
+    }
+
+    private void addNews(JSONArray news) throws JSONException {
+        for (int i = 0; i < news.length(); i++) {
+            // Add each article as an Article object to articles
+            allArticles.add(Article.fromJson((JSONObject) news.get(i)));
+        }
+        // Update covid case count
+        setCaseCount();
+    }
+
+    public static String locationToISO(JSONObject location) throws JSONException {
+        String iso = "";
+        String country = "";
+        String region = "";
+        JSONArray components = ((JSONObject) location.getJSONArray("results").get(0)).getJSONArray("address_components");
+        for (int i = 0; i < components.length(); i++) {
+            // Search through components for state/province and country
+            JSONObject element = ((JSONObject)components.get(i));
+            Log.i(TAG, element.toString());
+            if (element.has("types")) {
+                if (element.getJSONArray("types").get(0).equals("country")) {
+                    Log.i(TAG, element.getString("short_name"));
+                    // Add country to ISO
+                    country = element.getString("short_name");
+                }
+                else if (element.getJSONArray("types").get(0).equals("administrative_area_level_1")) {
+                    // Add state/province to ISO
+                    Log.i(TAG, element.getString("short_name"));
+                    region = element.getString("short_name");
+                    stateName = element.getString("long_name");
+                }
+            }
+        }
+        iso = country + "-" + region;
+        Log.i(TAG, "ISO code: " + iso);
+        return iso;
+    }
+
 }

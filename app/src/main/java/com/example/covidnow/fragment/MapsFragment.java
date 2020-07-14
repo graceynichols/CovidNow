@@ -262,10 +262,11 @@ public class MapsFragment extends Fragment {
         }
         // Report to the UI that the location was updated
         mCurrentLocation = location2;
+        /*
         String msg = "Updated Location: " +
                 Double.toString(location2.getLatitude()) + "," +
                 Double.toString(location2.getLongitude());
-        Toast.makeText(fragment.getContext(), msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(fragment.getContext(), msg, Toast.LENGTH_SHORT).show();*/
     }
 
 

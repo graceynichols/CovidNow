@@ -26,6 +26,7 @@ import com.codepath.asynchttpclient.AsyncHttpClient;
 import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.ArticlesAdapter;
+import com.example.covidnow.PlacesAdapter;
 import com.example.covidnow.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -43,12 +44,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseQuery;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.Headers;
@@ -68,6 +73,9 @@ public class MapsFragment extends Fragment {
     private MapsFragment fragment = this;
     private EditText etSearch;
     private ImageButton btnSearch;
+    private RecyclerView rvPlaces;
+    private PlacesAdapter adapter;
+    private List<com.example.covidnow.Location> locations;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
@@ -89,10 +97,6 @@ public class MapsFragment extends Fragment {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             map = googleMap;
-            //LatLng sydney = new LatLng(-34, 151);
-            //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
 
             if (map != null) {
                 // Map is ready
@@ -102,8 +106,6 @@ public class MapsFragment extends Fragment {
             } else {
                 Toast.makeText(fragment.getContext(), "Error - Map was null!!", Toast.LENGTH_SHORT).show();
             }
-
-            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
         }
     };
 
@@ -127,6 +129,9 @@ public class MapsFragment extends Fragment {
         }
         etSearch = view.findViewById(R.id.etSearch);
         btnSearch = view.findViewById(R.id.btnSearch);
+        rvPlaces = view.findViewById(R.id.rvPlaces);
+
+
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
@@ -142,7 +147,20 @@ public class MapsFragment extends Fragment {
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
+                    // Locate nearby places
                     findAPlace(search);
+                    // Make recyclerview visible at the bottom
+                    rvPlaces.setVisibility(View.VISIBLE);
+                    // Initialize recyclerview
+                    locations = new ArrayList<>();
+                    adapter = new PlacesAdapter(fragment, locations);
+                    rvPlaces.setAdapter(adapter);
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+                    rvPlaces.setLayoutManager(layoutManager);
+
+                    // Add lines between recycler view
+                    RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+                    rvPlaces.addItemDecoration(itemDecoration);
                 }
             }
         });
@@ -153,8 +171,7 @@ public class MapsFragment extends Fragment {
         RequestParams params = new RequestParams();
         params.put("key",  getString(R.string.google_maps_key));
 
-        //params.put("input",  search);
-        //params.put("inputtype",  "textquery");
+        // Search for relevant nearby locations
         String coords = mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude();
         params.put("location", coords);
         params.put("radius", "50000");
@@ -167,6 +184,15 @@ public class MapsFragment extends Fragment {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 Log.i(TAG, "Places API Response: " + json.toString());
+                // Add places to recyclerview
+                try {
+                    JSONArray array = json.jsonObject.getJSONArray("results");
+                    addPlaces(array);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Error retrieving places results");
+                    Toast.makeText(getContext(), "Error retrieving places results", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -175,6 +201,42 @@ public class MapsFragment extends Fragment {
                 Toast.makeText(getContext(), "Error searching places", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void addPlaces(JSONArray array) throws JSONException {
+        for (int i = 0; i < array.length(); i++) {
+            final JSONObject newLocation = (JSONObject) array.get(i);
+            locations.add(com.example.covidnow.Location.fromJson(newLocation));
+            /*
+            String placeId = newLocation.getString("place_id");
+            // Search if this location is already saved
+            ParseQuery<com.example.covidnow.Location> query =  ParseQuery.getQuery(com.example.covidnow.Location.class);
+            query.whereEqualTo(com.example.covidnow.Location.KEY_PLACE_ID, placeId);
+            query.findInBackground(new FindCallback<com.example.covidnow.Location>() {
+                @Override
+                public void done(List<com.example.covidnow.Location> objects, ParseException e) {
+                    if (e != null) {
+                        Log.e(TAG, "Issue with getting locations from Parse", e);
+                        return;
+                    } else if (objects.size() < 1) {
+                        // No saved objects exist, we need to create one
+                        try {
+                            locations.add(com.example.covidnow.Location.fromJson(newLocation));
+                        } catch (JSONException ex) {
+                            ex.printStackTrace();
+                            Log.e(TAG, "Issue with getting locations from Parse", ex);
+                            return;
+                        }
+                    } else {
+                        // Add the saved location to recyclerview
+                        locations.add(objects.get(0));
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+            });*/
+
+        }
+        adapter.notifyDataSetChanged();
     }
 
     @Override

@@ -61,7 +61,7 @@ public class HomeFragment extends Fragment {
     private static JSONObject location;
     private static String stateName;
     private final static String KEY_LOCATION = "location";
-    Location mCurrentLocation;
+    private Location mCurrentLocation;
 
     public HomeFragment() {
         // Required empty public constructor

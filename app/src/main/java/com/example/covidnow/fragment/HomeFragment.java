@@ -54,15 +54,14 @@ public class HomeFragment extends Fragment {
     private static final String NEWS_URL = "https://api.smartable.ai/coronavirus/news/";
     private static final String CASES_URL = "https://api.smartable.ai/coronavirus/stats/";
     private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
-    private static final int POST_LIMIT = 20;
     private RecyclerView rvArticles;
     private TextView tvCases;
     protected ArticlesAdapter adapter;
     protected List<Article> allArticles;
-    Location mCurrentLocation;
-    public static JSONObject location;
+    private static JSONObject location;
     private static String stateName;
     private final static String KEY_LOCATION = "location";
+    Location mCurrentLocation;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -162,7 +161,7 @@ public class HomeFragment extends Fragment {
     private void setCaseCount() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("Subscription-Key", "1fddf7e6b3b1498baa17236a3209d659");
+        params.put("Subscription-Key", getString(R.string.covid_news_key));
         String casesUrl;
 
         try {
@@ -202,7 +201,7 @@ public class HomeFragment extends Fragment {
     protected void queryNews() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("Subscription-Key", "1fddf7e6b3b1498baa17236a3209d659");
+        params.put("Subscription-Key",  getString(R.string.covid_news_key));
         String newsUrl;
 
         try {
@@ -220,6 +219,7 @@ public class HomeFragment extends Fragment {
                 Log.i(TAG, "News Response: " + json.toString());
                 try {
                     JSONArray news = json.jsonObject.getJSONArray("news");
+                    Log.i(TAG, "News: " + news.toString());
                     addNews(news);
                     adapter.notifyDataSetChanged();
                 } catch (JSONException e) {

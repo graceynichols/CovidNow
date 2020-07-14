@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,7 +24,18 @@
         android:background="#FFFFFF"
         android:elevation="1dp"
         android:ems="10"
-        android:hint="Search Places"
+        android:fadingEdge="horizontal|vertical"
+        android:hint="@string/search_places"
         android:inputType="textPersonName"
         android:padding="8dp" />
+
+    <ImageButton
+        android:id="@+id/btnSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etSearch"
+        android:layout_alignEnd="@+id/etSearch"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="0dp"
+        android:src="?android:attr/actionModeWebSearchDrawable" />
 </RelativeLayout>

@@ -17,9 +17,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.codepath.asynchttpclient.AsyncHttpClient;
+import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.ArticlesAdapter;
 import com.example.covidnow.R;
@@ -40,6 +44,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -56,15 +62,19 @@ public class MapsFragment extends Fragment {
 
     private static final String TAG = "MapsFragment";
     private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
+    private static final String PLACE_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?";
+    private static final String NEARBY_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private MapsFragment fragment = this;
+    private EditText etSearch;
+    private ImageButton btnSearch;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
-    JSONObject location;
-    Location mCurrentLocation;
-    GoogleMap map;
+    private JSONObject location;
+    private Location mCurrentLocation;
+    private GoogleMap map;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -108,18 +118,63 @@ public class MapsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         if (savedInstanceState != null && savedInstanceState.keySet().contains(KEY_LOCATION)) {
             // Since KEY_LOCATION was found in the Bundle, we can be sure that mCurrentLocation
             // is not null.
             Log.i(TAG, "mCurrentLocation not null");
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         }
+        etSearch = view.findViewById(R.id.etSearch);
+        btnSearch = view.findViewById(R.id.btnSearch);
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
         }
+
+        // Listen for searches
+        btnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String search = etSearch.getText().toString();
+                if (search.isEmpty()) {
+                    Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
+                } else {
+                    findAPlace(search);
+                }
+            }
+        });
+    }
+
+    private void findAPlace(String search) {
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("key",  getString(R.string.google_maps_key));
+
+        //params.put("input",  search);
+        //params.put("inputtype",  "textquery");
+        String coords = mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude();
+        params.put("location", coords);
+        params.put("radius", "50000");
+        params.put("keyword", search);
+        params.put("opennow", true);
+        Log.i(TAG, "Coordinates: " + coords);
+        //params.put("fields", "formatted_address,name,geometry");
+
+        client.get(NEARBY_SEARCH_URL, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, "Places API Response: " + json.toString());
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error searching places");
+                Toast.makeText(getContext(), "Error searching places", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -142,6 +197,7 @@ public class MapsFragment extends Fragment {
                     public void onSuccess(Location location2) {
                         if (location2 != null) {
                             Log.i(TAG, "Location: " + location2.toString());
+                            mCurrentLocation = location2;
                             getAddressFromLocation(location2);
                             onLocationChanged(location2);
                         }
@@ -262,12 +318,5 @@ public class MapsFragment extends Fragment {
         }
         // Report to the UI that the location was updated
         mCurrentLocation = location2;
-        /*
-        String msg = "Updated Location: " +
-                Double.toString(location2.getLatitude()) + "," +
-                Double.toString(location2.getLongitude());
-        Toast.makeText(fragment.getContext(), msg, Toast.LENGTH_SHORT).show();*/
     }
-
-
 }

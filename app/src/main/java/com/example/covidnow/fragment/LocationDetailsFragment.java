@@ -1,7 +1,5 @@
 package com.example.covidnow.fragment;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -11,12 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.covidnow.Article;
-import com.example.covidnow.Location;
+import com.example.covidnow.models.Location;
 import com.example.covidnow.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -68,22 +64,32 @@ public class LocationDetailsFragment extends Fragment {
             tvAddress.setText(location.getAddress());
         }
 
-        if (location.getLastHotspotStatus() != null) {
-            tvHotspotDate.setText(location.getLastHotspotStatus().toString());
+        if (location.getUpdatedAt() != null) {
+            tvHotspotDate.setText(location.getUpdatedAt().toString());
         }
         if (location.isHotspot()) {
             // Make caution sign appear
             ivHotspot.setVisibility(View.VISIBLE);
         }
 
-        if (location.getPicture() != null) {
-            Glide.with(getContext()).load(location.getPicture().getUrl()).centerCrop().into(ivImage);
+        if (location.getImage() != null) {
+            Glide.with(getContext()).load(location.getImage().getUrl()).centerCrop().into(ivImage);
+        } else {
+            Log.i(TAG, "Location has no picture");
         }
 
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Edit button clicked!");
+                Fragment newFrag = new ComposeReviewFragment();
+                Bundle result = new Bundle();
+                // Send this location to the compose fragment
+                result.putParcelable("location", Parcels.wrap(location));
+                newFrag.setArguments(result);
+                // Start compose review fragment
+                getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                        newFrag).commit();
             }
         });
     }

@@ -1,24 +1,19 @@
-package com.example.covidnow;
+package com.example.covidnow.models;
 
 import android.util.Log;
-import android.widget.Toast;
 
-import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseClassName;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcel;
 
+import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 @Parcel(analyze = {Location.class})
 @ParseClassName("Location")
@@ -28,8 +23,8 @@ public class Location extends ParseObject {
     public static final String KEY_ADDRESS = "address";
     public static final String KEY_IS_HOTSPOT = "isHotspot";
     public static final String KEY_NAME = "name";
-    public static final String KEY_LAST_HOTSPOT_STATUS = "lastHotspotStatus";
-    public static final String KEY_PICTURE = "picture";
+    public static final String KEY_UPDATED_AT = "updatedAt";
+    public static final String KEY_IMAGE = "image";
     public static final String KEY_PLACE_ID = "place_id";
     public static final String KEY_LATITUDE = "latitude";
     public static final String KEY_LONGITUDE = "longitude";
@@ -45,11 +40,11 @@ public class Location extends ParseObject {
         location.setPlaceId(json.getString("place_id"));
         location.setLatitude(json.getJSONObject("geometry").getJSONObject("location").getDouble("lat"));
         location.setLongitude(json.getJSONObject("geometry").getJSONObject("location").getDouble("lng"));
-        //saveLocation(location);
         return location;
     }
 
     public static void saveLocation(Location newLocation) {
+        newLocation.setUpdatedAt();
         newLocation.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -79,13 +74,13 @@ public class Location extends ParseObject {
 
     public void setName(String name) { put(KEY_NAME, name); }
 
-    public Date getLastHotspotStatus() {return getDate(KEY_LAST_HOTSPOT_STATUS); }
+    public Date getUpdatedAt() {return getDate(KEY_UPDATED_AT); }
 
-    public void setLastHotspotStatus(Date date) { put(KEY_LAST_HOTSPOT_STATUS, date); }
+    public void setUpdatedAt() { put(KEY_UPDATED_AT, Calendar.getInstance().getTime()); }
 
-    public ParseFile getPicture() {return getParseFile(KEY_PICTURE); }
+    public ParseFile getImage() {return getParseFile(KEY_IMAGE); }
 
-    public void setPicture(ParseFile picture) { put(KEY_PICTURE, picture); }
+    public void setImage(ParseFile picture) { put(KEY_IMAGE, picture); }
 
     public double getLatitude() {return getDouble(KEY_LATITUDE); }
 

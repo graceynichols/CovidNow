@@ -1,7 +1,8 @@
-package com.example.covidnow;
+package com.example.covidnow.models;
 
 import android.app.Application;
 
+import com.example.covidnow.models.Location;
 import com.parse.Parse;
 import com.parse.ParseObject;
 

@@ -9,13 +9,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,17 +21,11 @@ import com.codepath.asynchttpclient.AsyncHttpClient;
 import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.Article;
-import com.example.covidnow.ArticlesAdapter;
+import com.example.covidnow.adapter.ArticlesAdapter;
 import com.example.covidnow.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -161,7 +153,7 @@ public class HomeFragment extends Fragment {
     private void setCaseCount() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("Subscription-Key", getActivity().getString(R.string.covid_news_key));
+        params.put("Subscription-Key", this.getString(R.string.covid_news_key));
         String casesUrl;
 
         try {

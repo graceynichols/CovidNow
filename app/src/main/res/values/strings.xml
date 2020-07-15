@@ -11,4 +11,7 @@
     <string name="search_places">Search Places</string>
     <string name="last_hotspot_designation">Last Hotspot Designation:</string>
     <string name="n_a">N/A</string>
+    <string name="take_picture">Take Picture</string>
+    <string name="submit">Submit</string>
+    <string name="last_updated">Last Updated:</string>
 </resources>

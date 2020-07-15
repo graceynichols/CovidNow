@@ -1,4 +1,4 @@
-package com.example.covidnow;
+package com.example.covidnow.adapter;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,7 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.covidnow.fragment.ArticleDetailsFragment;
+import com.example.covidnow.models.Location;
+import com.example.covidnow.R;
 import com.example.covidnow.fragment.LocationDetailsFragment;
 
 import org.parceler.Parcels;

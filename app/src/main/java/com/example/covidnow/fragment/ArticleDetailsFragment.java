@@ -5,11 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,13 +15,10 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.covidnow.Article;
-import com.example.covidnow.ArticlesAdapter;
 import com.example.covidnow.R;
 import android.widget.RelativeLayout.LayoutParams;
 
 import org.parceler.Parcels;
-
-import java.util.ArrayList;
 
 public class ArticleDetailsFragment extends Fragment {
     private Article article;

@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -25,8 +24,7 @@ import android.widget.Toast;
 import com.codepath.asynchttpclient.AsyncHttpClient;
 import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
-import com.example.covidnow.ArticlesAdapter;
-import com.example.covidnow.PlacesAdapter;
+import com.example.covidnow.adapter.PlacesAdapter;
 import com.example.covidnow.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -41,10 +39,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
@@ -77,7 +73,7 @@ public class MapsFragment extends Fragment {
     private ImageButton btnSearch;
     private RecyclerView rvPlaces;
     private PlacesAdapter adapter;
-    private List<com.example.covidnow.Location> locations;
+    private List<com.example.covidnow.models.Location> locations;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
@@ -212,17 +208,17 @@ public class MapsFragment extends Fragment {
 
             // Search if this location is already saved
             Log.i(TAG, "Searching for Place id: " + placeId);
-            ParseQuery<com.example.covidnow.Location> query =  ParseQuery.getQuery("Location");
-            query.include(com.example.covidnow.Location.KEY_PLACE_ID);
+            ParseQuery<com.example.covidnow.models.Location> query =  ParseQuery.getQuery("Location");
+            query.include(com.example.covidnow.models.Location.KEY_PLACE_ID);
             query.whereEqualTo("place_id", placeId);
-            query.getFirstInBackground(new GetCallback<com.example.covidnow.Location>() {
+            query.getFirstInBackground(new GetCallback<com.example.covidnow.models.Location>() {
                 @Override
-                public void done(com.example.covidnow.Location object, ParseException e) {
+                public void done(com.example.covidnow.models.Location object, ParseException e) {
                     if (object == null) {
                         // no location saved, must create new one
                         try {
                             Log.i(TAG, "This location was NOT previously saved " + placeId);
-                            locations.add(com.example.covidnow.Location.fromJson(newLocation));
+                            locations.add(com.example.covidnow.models.Location.fromJson(newLocation));
                         } catch (JSONException ex) {
                             ex.printStackTrace();
                         }

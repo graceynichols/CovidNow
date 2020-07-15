@@ -24,6 +24,7 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name=".activity.MainActivity" />
+
         <activity
             android:name=".activity.LoginActivity"
             android:label="@string/title_activity_maps">

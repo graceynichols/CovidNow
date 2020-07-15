@@ -161,7 +161,7 @@ public class HomeFragment extends Fragment {
     private void setCaseCount() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("Subscription-Key", getString(R.string.covid_news_key));
+        params.put("Subscription-Key", getActivity().getString(R.string.covid_news_key));
         String casesUrl;
 
         try {

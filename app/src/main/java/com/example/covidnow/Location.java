@@ -45,7 +45,21 @@ public class Location extends ParseObject {
         location.setPlaceId(json.getString("place_id"));
         location.setLatitude(json.getJSONObject("geometry").getJSONObject("location").getDouble("lat"));
         location.setLongitude(json.getJSONObject("geometry").getJSONObject("location").getDouble("lng"));
+        //saveLocation(location);
         return location;
+    }
+
+    public static void saveLocation(Location newLocation) {
+        newLocation.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e != null) {
+                    Log.e(TAG, "Error while saving location", e);
+                } else {
+                    Log.i(TAG, "Location save sucessful");
+                }
+            }
+        });
     }
 
     public String getPlaceId() {return getString(KEY_PLACE_ID); }

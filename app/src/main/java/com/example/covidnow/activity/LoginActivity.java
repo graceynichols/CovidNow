@@ -34,6 +34,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
         if (ParseUser.getCurrentUser() != null) {
+            Log.i(TAG, "Logging in: " + ParseUser.getCurrentUser().getUsername());
             goMainActivity();
         }
         pb = findViewById(R.id.pbLoading);

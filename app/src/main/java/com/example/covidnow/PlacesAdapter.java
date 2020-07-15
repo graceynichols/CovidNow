@@ -2,6 +2,7 @@ package com.example.covidnow;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.covidnow.fragment.ArticleDetailsFragment;
+import com.example.covidnow.fragment.LocationDetailsFragment;
 
 import org.parceler.Parcels;
 
@@ -53,6 +55,20 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
             } else {
                 ivHotspot.setVisibility(View.GONE);
             }
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.i(TAG, "Location clicked! Opening details view");
+                    Bundle result = new Bundle();
+                    result.putParcelable("location", Parcels.wrap(location));
+                    // Start article details fragment
+                    Fragment newFrag = new LocationDetailsFragment();
+                    newFrag.setArguments(result);
+                    fragment.getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                            newFrag).commit();
+                }
+            });
             /*
             // On click for article details view
             itemView.setOnClickListener(new View.OnClickListener() {

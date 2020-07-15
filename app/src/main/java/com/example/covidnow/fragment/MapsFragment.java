@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 
@@ -69,6 +70,7 @@ public class MapsFragment extends Fragment {
     private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
     private static final String PLACE_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?";
     private static final String NEARBY_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
+    private static final String SEARCH_RADIUS = "30000";
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private MapsFragment fragment = this;
     private EditText etSearch;
@@ -174,7 +176,7 @@ public class MapsFragment extends Fragment {
         // Search for relevant nearby locations
         String coords = mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude();
         params.put("location", coords);
-        params.put("radius", "50000");
+        params.put("radius", SEARCH_RADIUS);
         params.put("keyword", search);
         params.put("opennow", true);
         Log.i(TAG, "Coordinates: " + coords);
@@ -206,37 +208,33 @@ public class MapsFragment extends Fragment {
     private void addPlaces(JSONArray array) throws JSONException {
         for (int i = 0; i < array.length(); i++) {
             final JSONObject newLocation = (JSONObject) array.get(i);
-            locations.add(com.example.covidnow.Location.fromJson(newLocation));
-            /*
-            String placeId = newLocation.getString("place_id");
+            final String placeId = newLocation.getString("place_id");
+
             // Search if this location is already saved
-            ParseQuery<com.example.covidnow.Location> query =  ParseQuery.getQuery(com.example.covidnow.Location.class);
-            query.whereEqualTo(com.example.covidnow.Location.KEY_PLACE_ID, placeId);
-            query.findInBackground(new FindCallback<com.example.covidnow.Location>() {
+            Log.i(TAG, "Searching for Place id: " + placeId);
+            ParseQuery<com.example.covidnow.Location> query =  ParseQuery.getQuery("Location");
+            query.include(com.example.covidnow.Location.KEY_PLACE_ID);
+            query.whereEqualTo("place_id", placeId);
+            query.getFirstInBackground(new GetCallback<com.example.covidnow.Location>() {
                 @Override
-                public void done(List<com.example.covidnow.Location> objects, ParseException e) {
-                    if (e != null) {
-                        Log.e(TAG, "Issue with getting locations from Parse", e);
-                        return;
-                    } else if (objects.size() < 1) {
-                        // No saved objects exist, we need to create one
+                public void done(com.example.covidnow.Location object, ParseException e) {
+                    if (object == null) {
+                        // no location saved, must create new one
                         try {
+                            Log.i(TAG, "This location was NOT previously saved " + placeId);
                             locations.add(com.example.covidnow.Location.fromJson(newLocation));
                         } catch (JSONException ex) {
                             ex.printStackTrace();
-                            Log.e(TAG, "Issue with getting locations from Parse", ex);
-                            return;
                         }
                     } else {
-                        // Add the saved location to recyclerview
-                        locations.add(objects.get(0));
+                        // The location was saved in parse
+                        Log.i(TAG, "* This location WAS previously saved " + placeId);
+                        locations.add(object);
                     }
                     adapter.notifyDataSetChanged();
                 }
-            });*/
-
+            });
         }
-        adapter.notifyDataSetChanged();
     }
 
     @Override

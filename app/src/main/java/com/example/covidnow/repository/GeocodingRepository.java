@@ -23,13 +23,13 @@ public class GeocodingRepository {
         client.get(geoUrl, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
-                Log.i(TAG, "Response" + " " + json.toString());
+                Log.i(TAG, "Geocoding API Response" + " " + json.toString());
                 HomeViewModel.getJsonLocation().setValue(json.jsonObject);
             }
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                Log.e(TAG, "Query location failed");
+                Log.e(TAG, "Query Geocoding API Location failed");
             }
         });
     }

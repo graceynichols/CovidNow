@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
@@ -79,12 +80,12 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Assign view model class
-        mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
+        //mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
        // mViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         rvArticles = view.findViewById(R.id.rvArticles);
         tvCases = view.findViewById(R.id.tvCases);
 
-        HomeViewModel.initializeHomeViewModel(this);
+        HomeViewModel.initializeHomeViewModel(this, getViewLifecycleOwner());
 
         rvArticles.setAdapter(HomeViewModel.getAdapter());
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -97,18 +98,7 @@ public class HomeFragment extends Fragment {
         // Retrieve user's current location with permission
         Log.i(TAG, "Getting current location");
         HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
-        // Query Location from GeoCoding API
-        final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
-            @Override
-            public void onChanged(@Nullable final JSONObject newLocation) {
-                // Location is ready to be passed to news api
-                Log.i(TAG, "Location received from View Model");
-                // Query news and case count from news API
-                NewsRepository.queryNews(getContext(), newLocation);
-            }
-        };
-        // Listen for location to be ready to give to new API
-        HomeViewModel.getJsonLocation().observe(getViewLifecycleOwner(), locObserver);
+
 
         final Observer<List<Article>> newsObserver = new Observer<List<Article>>() {
             @Override
@@ -152,9 +142,9 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onSuccess(Location location) {
                         if (location != null) {
-                            Log.i(TAG, "Location: " + location.toString());
-                            // Give lat and long to Geocoding API, which will update viewModel
-                            GeocodingRepository.queryGeocodeLocation(location.getLatitude(), location.getLongitude(), getContext());
+                            Log.i(TAG, "Google Maps Coordinates: " + location.toString());
+                            // Give lat and long to view model for geocoding API
+                            HomeViewModel.getCoordinates().setValue(Pair.create(location.getLatitude(), location.getLongitude()));
                         }
                     }
                 })

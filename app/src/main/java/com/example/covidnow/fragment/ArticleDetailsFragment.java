@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -14,7 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.covidnow.Article;
+import com.example.covidnow.models.Article;
 import com.example.covidnow.R;
 import android.widget.RelativeLayout.LayoutParams;
 
@@ -59,6 +60,18 @@ public class ArticleDetailsFragment extends Fragment {
         tvSource.setText(article.getSource());
         tvDate.setText(article.getDate());
         tvSummary.setText(article.getSummary());
+
+        // Handle back button pressed event
+        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                // Handle the back button event
+                Fragment newFrag = new HomeFragment();
+                getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                        newFrag).commit();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
 
         // Add image if there is one
         if (article.getImageUrl() != null) {

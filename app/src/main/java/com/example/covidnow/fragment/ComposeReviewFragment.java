@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
@@ -110,11 +111,23 @@ public class ComposeReviewFragment extends Fragment {
                 boolean isHotspot = switchHotspot.isChecked();
                 location.setIsHotspot(isHotspot);
                 Location.saveLocation(location);
+                pb.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Review Saved!", Toast.LENGTH_SHORT).show();
 
                 // Return to details activity
                 goDetailsActivity();
             }
         });
+
+        // Handle back button pressed event
+        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                // Handle the back button event
+                goDetailsActivity();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     private void goDetailsActivity() {

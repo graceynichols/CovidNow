@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.covidnow.Article;
+import com.example.covidnow.models.Article;
 import com.example.covidnow.R;
 import com.example.covidnow.fragment.ArticleDetailsFragment;
 

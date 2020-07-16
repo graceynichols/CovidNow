@@ -1,4 +1,4 @@
-package com.example.covidnow.models;
+package com.example.covidnow;
 
 import android.app.Application;
 

@@ -1,4 +1,4 @@
-package com.example.covidnow;
+package com.example.covidnow.models;
 
 import android.text.format.DateUtils;
 

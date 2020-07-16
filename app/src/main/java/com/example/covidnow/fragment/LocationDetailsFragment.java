@@ -2,6 +2,7 @@ package com.example.covidnow.fragment;
 
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -92,5 +93,17 @@ public class LocationDetailsFragment extends Fragment {
                         newFrag).commit();
             }
         });
+
+        // Handle back button pressed event
+        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                // Handle the back button event
+                Fragment newFrag = new MapsFragment();
+                getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                        newFrag).commit();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 }

@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +30,7 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.adapter.PlacesAdapter;
 import com.example.covidnow.R;
 import com.example.covidnow.repository.PlacesRepository;
+import com.example.covidnow.viewmodels.HomeViewModel;
 import com.example.covidnow.viewmodels.MapsViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -66,20 +69,20 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 public class MapsFragment extends Fragment {
 
     private static final String TAG = "MapsFragment";
-    private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
-
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private MapsFragment fragment = this;
     private EditText etSearch;
     private ImageButton btnSearch;
     private RecyclerView rvPlaces;
-
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
+    private static List<com.example.covidnow.models.Location> adapterPlaces = new ArrayList<>();
+    private static PlacesAdapter adapter;
+    private Pair<Double, Double> coordinates;
     private Location mCurrentLocation;
     private GoogleMap map;
+    private MapsViewModel mViewModel;
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -124,9 +127,16 @@ public class MapsFragment extends Fragment {
             Log.i(TAG, "mCurrentLocation not null");
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         }
+        // Set view model
+        mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
+
         etSearch = view.findViewById(R.id.etSearch);
         btnSearch = view.findViewById(R.id.btnSearch);
         rvPlaces = view.findViewById(R.id.rvPlaces);
+
+        // Initialize adapter
+        adapterPlaces = new ArrayList<>();
+        adapter = new PlacesAdapter(fragment, adapterPlaces);
 
 
         SupportMapFragment mapFragment =
@@ -144,9 +154,13 @@ public class MapsFragment extends Fragment {
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
-                    rvPlaces.setAdapter(MapsViewModel.createAdapter(fragment));
+                    rvPlaces.setAdapter(adapter);
                     // Locate nearby places
-                    MapsViewModel.getPlaces(search, getContext(), getViewLifecycleOwner());
+                    if (coordinates == null) {
+                        Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    mViewModel.getPlaces(coordinates, search, getContext(), getViewLifecycleOwner());
 
                     // Make recyclerview visible at the bottom
                     rvPlaces.setVisibility(View.VISIBLE);
@@ -158,6 +172,17 @@ public class MapsFragment extends Fragment {
                     // Add lines between recycler view
                     RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
                     rvPlaces.addItemDecoration(itemDecoration);
+
+                    // Listen for List<Location> received from ParseRepo
+                    final Observer<List<com.example.covidnow.models.Location>> placesListObserver = new Observer<List<com.example.covidnow.models.Location>>() {
+                        @Override
+                        public void onChanged(@Nullable final List<com.example.covidnow.models.Location> newPlaces) {
+                            // List of places ready to be given to recyclerview
+                            Log.i(TAG, "Places list received from ParseRepo");
+                            adapter.addAll(newPlaces);
+                        }
+                    };
+                    mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);
                 }
             }
         });
@@ -184,7 +209,7 @@ public class MapsFragment extends Fragment {
                         if (location2 != null) {
                             Log.i(TAG, "Location: " + location2.toString());
                             // Give coordinates to view model
-                            MapsViewModel.getCoordinates().setValue(Pair.create(location2.getLatitude(), location2.getLongitude()));
+                            coordinates = Pair.create(location2.getLatitude(), location2.getLongitude());
                             mCurrentLocation = location2;
                             moveCameraToLocation(location2);
                             // Listen for location changes
@@ -231,23 +256,6 @@ public class MapsFragment extends Fragment {
     public void onStop() {
         super.onStop();
     }
-
-    /*
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Display the connection status
-        if (mCurrentLocation != null) {
-            Toast.makeText(getContext(), "GPS location was found!", Toast.LENGTH_SHORT).show();
-            LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 17);
-            map.animateCamera(cameraUpdate);
-        } else {
-            Toast.makeText(getContext(), "Current location was null, enable GPS on emulator!", Toast.LENGTH_SHORT).show();
-        }
-        MapsFragmentPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
-    }*/
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     protected void startLocationUpdates() {

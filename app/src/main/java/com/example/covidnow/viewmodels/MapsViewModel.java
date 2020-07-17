@@ -1,56 +1,78 @@
 package com.example.covidnow.viewmodels;
 
+import android.app.Application;
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
+import com.example.covidnow.R;
 import com.example.covidnow.adapter.PlacesAdapter;
 import com.example.covidnow.models.Article;
 import com.example.covidnow.models.Location;
 import com.example.covidnow.repository.ParseRepository;
 import com.example.covidnow.repository.PlacesRepository;
 import com.google.android.gms.common.api.internal.LifecycleCallback;
+import com.parse.GetCallback;
+import com.parse.ParseException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsViewModel {
+import okhttp3.Headers;
+
+public class MapsViewModel extends AndroidViewModel {
 
     private static String TAG = "MapsViewModel";
-    private static MutableLiveData<Pair<Double, Double>> coordinates;
-    private static MutableLiveData<List<Location>> nearbyPlacesList;
-    private static MutableLiveData<JSONArray> nearbyPlacesJson;
-    private static List<Location> adapterPlaces = new ArrayList<>();
-    private static PlacesAdapter adapter;
+    private MutableLiveData<List<Location>> nearbyPlacesList;
+    private MutableLiveData<JSONArray> nearbyPlacesJson;
+    private PlacesRepository placesRepository;
+    private ParseRepository parseRepository;
 
-    public static PlacesAdapter createAdapter(Fragment fragment) {
-        adapterPlaces = new ArrayList<>();
-        adapter = new PlacesAdapter(fragment, adapterPlaces);
-        return adapter;
+    public MapsViewModel(@NonNull Application application) {
+        super(application);
+        this.placesRepository = new PlacesRepository();
+        this.parseRepository = new ParseRepository();
     }
 
-    public static void getPlaces(final String search, final Context context, LifecycleOwner lfOwner) {
+    public void getPlaces(final Pair<Double, Double> newCoords, final String search, final Context context, LifecycleOwner lfOwner) {
         // Listen for coordinates from MapsFragment
-        final Observer<Pair<Double, Double>> coordsObserver = new Observer<Pair<Double, Double>>() {
+        Log.i(TAG, "Coordinates received from MapsFragment");
+        placesRepository.findAPlace(search, newCoords.first, newCoords.second, context.getString(R.string.google_maps_key), new JsonHttpResponseHandler() {
             @Override
-            public void onChanged(@Nullable final Pair<Double, Double> newCoord) {
-                // Location is ready to be passed to Places API
-                Log.i(TAG, "Location received from MapsFragment");
-                // Query nearby places from Places API
-                PlacesRepository.findAPlace(search, getCoordinates().getValue().first,  getCoordinates().getValue().second, context);
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                try {
+                    Log.i(TAG, "Places API Response: " + json.toString());
+                    JSONArray array = json.jsonObject.getJSONArray("results");
+                    nearbyPlacesJson.postValue(array);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Error retrieving places results");
+                    Toast.makeText(context, "Error retrieving places results", Toast.LENGTH_SHORT).show();
+                }
             }
-        };
-        getCoordinates().observe(lfOwner, coordsObserver);
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error searching places");
+                Toast.makeText(context, "Error searching places", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Listen for nearby places JSON from PlacesRepository
         final Observer<JSONArray> placesJSONObserver = new Observer<JSONArray>() {
@@ -60,48 +82,51 @@ public class MapsViewModel {
                 Log.i(TAG, "Places JSON received from PlacesRepo");
                 // Search each place in Parse
                 try {
-                    ParseRepository.searchPlaces(jArray);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Unable to search places in parse");
-                    Toast.makeText(context, "Unable to retrieve COVID information on places", Toast.LENGTH_SHORT).show();
+                    final List<Location> finalPlaces = new ArrayList<>();
+                    for (int i = 0; i < jArray.length(); i++) {
+                        final int ii = i;
+                        final JSONObject newLocation = (JSONObject) jArray.get(i);
+                        final String placeId = newLocation.getString("place_id");
+                        parseRepository.searchPlace(placeId, new GetCallback<Location>() {
+                            @Override
+                            public void done(Location object, ParseException e) {
+                                if (object == null) {
+                                    // no location saved, must create new one
+                                    try {
+                                        Log.i(TAG, "This location was NOT previously saved " + placeId);
+                                        finalPlaces.add(com.example.covidnow.models.Location.fromJson(newLocation));
+                                    } catch (JSONException ex) {
+                                        ex.printStackTrace();
+                                        Log.i(TAG, "Error parsing location from JSON");
+                                    }
+                                } else {
+                                    // The location was saved in parse
+                                    Log.i(TAG, "* This location WAS previously saved " + placeId);
+                                    finalPlaces.add(object);
+                                }
+                                if (ii == jArray.length() - 1) {
+                                    // We've reached the end of the list
+                                    nearbyPlacesList.postValue(finalPlaces);
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.i(TAG, "Error parsing JSON location");
                 }
-
             }
         };
         getNearbyPlacesJson().observe(lfOwner, placesJSONObserver);
-
-        // Listen for List<Location> received from ParseRepo
-        final Observer<List<Location>> placesListObserver = new Observer<List<Location>>() {
-            @Override
-            public void onChanged(@Nullable final List<Location> newPlaces) {
-                // List of places ready to be given to recyclerview
-                Log.i(TAG, "Places list received from ParseRepo");
-                getAdapter().addAll(newPlaces);
-            }
-        };
-        getNearbyPlacesList().observe(lfOwner, placesListObserver);
     }
 
-    public static PlacesAdapter getAdapter() {
-        return adapter;
-    }
-
-    public static MutableLiveData<Pair<Double, Double>> getCoordinates() {
-        if (coordinates == null) {
-            coordinates = new MutableLiveData<Pair<Double, Double>>();
-        }
-        return coordinates;
-    }
-
-    public static MutableLiveData<List<Location>> getNearbyPlacesList() {
+    public LiveData<List<Location>> getNearbyPlacesList() {
         if (nearbyPlacesList == null) {
             nearbyPlacesList = new MutableLiveData<List<Location>>();
         }
         return nearbyPlacesList;
     }
 
-    public static MutableLiveData<JSONArray> getNearbyPlacesJson() {
+    public LiveData<JSONArray> getNearbyPlacesJson() {
         if (nearbyPlacesJson == null) {
             nearbyPlacesJson = new MutableLiveData<JSONArray>();
         }

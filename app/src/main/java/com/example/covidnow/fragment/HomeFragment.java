@@ -87,10 +87,8 @@ public class HomeFragment extends Fragment {
         rvArticles = view.findViewById(R.id.rvArticles);
         tvCases = view.findViewById(R.id.tvCases);
 
-        HomeViewModel.initializeHomeViewModel(this, getViewLifecycleOwner());
-
         //GeocodingRepository.queryGeocodeLocation(37, -22, getContext());
-        rvArticles.setAdapter(HomeViewModel.getAdapter());
+        rvArticles.setAdapter(HomeViewModel.createAdapter(this));
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         rvArticles.setLayoutManager(layoutManager);
 
@@ -102,31 +100,19 @@ public class HomeFragment extends Fragment {
         Log.i(TAG, "Getting current location");
         HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
 
-
-
-
-        final Observer<List<Article>> newsObserver = new Observer<List<Article>>() {
-            @Override
-            public void onChanged(@Nullable final List<Article> news) {
-                // News is ready to be added to recyclerview
-                Log.i(TAG, "News received from View Model");
-                HomeViewModel.getAdapterArticles().addAll(news);
-                HomeViewModel.getAdapter().notifyDataSetChanged();
-            }
-        };
-        // Listen for news to be ready to post on home screen
-        HomeViewModel.getAllArticles().observe(getViewLifecycleOwner(), newsObserver);
+        // Retrieve news data from HomeViewModel
+        HomeViewModel.getNews(this, getViewLifecycleOwner());
 
         // Listen for case count from news API
         final Observer<String> caseCountObserver = new Observer<String>() {
             @Override
             public void onChanged(@Nullable final String caseCount) {
-                // Case count is ready to be added to be shown
+                // Case count is ready to be shown
                 Log.i(TAG, "News received from View Model");
                 tvCases.setText(caseCount);
             }
         };
-        // Listen for location to be ready to give to new API
+        // Listen for case count to be put by NewsRepo
         HomeViewModel.getCaseCount().observe(getViewLifecycleOwner(), caseCountObserver);
 
     }
@@ -150,7 +136,6 @@ public class HomeFragment extends Fragment {
                             Log.i(TAG, "Google Maps Coordinates: " + location.toString());
                             // Give lat and long to view model for geocoding API
                             HomeViewModel.getCoordinates().setValue(Pair.create(location.getLatitude(), location.getLongitude()));
-                            GeocodingRepository.queryGeocodeLocation(location.getLatitude(), location.getLongitude(), getContext());
                         }
                     }
                 })

@@ -56,9 +56,13 @@ public class HomeViewModel extends AndroidViewModel {
         this.geocodingRepository = new GeocodingRepository();
     }
 
-    public static void initializeHomeViewModel(final Fragment fragment, LifecycleOwner lfOwner) {
+    public static ArticlesAdapter createAdapter(Fragment fragment) {
         adapter = new ArticlesAdapter(fragment, adapterArticles);
+        return adapter;
+    }
 
+    public static void getNews(final Fragment fragment, LifecycleOwner lfOwner) {
+        // Retrieve news from API's, put in recyclerview
         // Listen for coordinates from HomeFragment
         final Observer<Pair<Double, Double>> coordsObserver = new Observer<Pair<Double, Double>>() {
             @Override
@@ -66,27 +70,35 @@ public class HomeViewModel extends AndroidViewModel {
                 // Location is ready to be passed to news api
                 Log.i(TAG, "Location received from HomeFragment");
                 // Query location from geocoding API
-                //geocodingRepository.queryGeocodeLocation(newCoord.first, newCoord.second, fragment.getContext());
-                //NewsRepository.queryNews(fragment.getContext(), newCoord);
+                GeocodingRepository.queryGeocodeLocation(newCoord.first, newCoord.second, fragment.getContext());
             }
         };
-        HomeViewModel.getCoordinates().observe(lfOwner, coordsObserver);
+       getCoordinates().observe(lfOwner, coordsObserver);
 
         // Listen for response from geocoding API to give to news API
         final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
             @Override
             public void onChanged(@Nullable final JSONObject newLocation) {
                 // Location is ready to be passed to news api
-                Log.i(TAG, "Location received from View Model");
+                Log.i(TAG, "Location received from View Model: " + newLocation.toString());
                 // Query news and case count from news API
                 NewsRepository.queryNews(fragment.getContext(), newLocation);
             }
         };
-        HomeViewModel.getJsonLocation().observe(lfOwner, locObserver);
+        getJsonLocation().observe(lfOwner, locObserver);
 
+        final Observer<List<Article>> newsObserver = new Observer<List<Article>>() {
+            @Override
+            public void onChanged(@Nullable final List<Article> news) {
+                // News is ready to be added to recyclerview
+                Log.i(TAG, "News received from View Model");
+                getAdapterArticles().addAll(news);
+                getAdapter().notifyDataSetChanged();
+            }
+        };
+        // Listen for news to be ready to post on home screen
+        getAllArticles().observe(lfOwner, newsObserver);
     }
-
-
 
     public static List<Article> getAdapterArticles() {
         return adapterArticles;

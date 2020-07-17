@@ -1,6 +1,7 @@
 package com.example.covidnow.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
@@ -51,7 +53,7 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 
 @RuntimePermissions
 public class HomeFragment extends Fragment {
-    private static final String TAG = "PostsFragment";
+    private static final String TAG = "HomeFragment";
 
     private RecyclerView rvArticles;
     private TextView tvCases;
@@ -80,13 +82,14 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Assign view model class
-        //mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
-       // mViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
+        //mViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         rvArticles = view.findViewById(R.id.rvArticles);
         tvCases = view.findViewById(R.id.tvCases);
 
         HomeViewModel.initializeHomeViewModel(this, getViewLifecycleOwner());
 
+        //GeocodingRepository.queryGeocodeLocation(37, -22, getContext());
         rvArticles.setAdapter(HomeViewModel.getAdapter());
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         rvArticles.setLayoutManager(layoutManager);
@@ -98,6 +101,8 @@ public class HomeFragment extends Fragment {
         // Retrieve user's current location with permission
         Log.i(TAG, "Getting current location");
         HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
+
+
 
 
         final Observer<List<Article>> newsObserver = new Observer<List<Article>>() {
@@ -145,6 +150,7 @@ public class HomeFragment extends Fragment {
                             Log.i(TAG, "Google Maps Coordinates: " + location.toString());
                             // Give lat and long to view model for geocoding API
                             HomeViewModel.getCoordinates().setValue(Pair.create(location.getLatitude(), location.getLongitude()));
+                            GeocodingRepository.queryGeocodeLocation(location.getLatitude(), location.getLongitude(), getContext());
                         }
                     }
                 })

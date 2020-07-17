@@ -111,4 +111,9 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
         locations.clear();
         notifyDataSetChanged();
     }
+
+    public void addAll(List<Location> newPlaces) {
+        locations.addAll(newPlaces);
+        notifyDataSetChanged();
+    }
 }

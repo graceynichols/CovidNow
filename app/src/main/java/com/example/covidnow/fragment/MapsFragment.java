@@ -3,6 +3,7 @@ package com.example.covidnow.fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,8 @@ import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.adapter.PlacesAdapter;
 import com.example.covidnow.R;
+import com.example.covidnow.repository.PlacesRepository;
+import com.example.covidnow.viewmodels.MapsViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -64,21 +67,17 @@ public class MapsFragment extends Fragment {
 
     private static final String TAG = "MapsFragment";
     private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
-    private static final String PLACE_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?";
-    private static final String NEARBY_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
-    private static final String SEARCH_RADIUS = "30000";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private MapsFragment fragment = this;
     private EditText etSearch;
     private ImageButton btnSearch;
     private RecyclerView rvPlaces;
-    private PlacesAdapter adapter;
-    private List<com.example.covidnow.models.Location> locations;
+
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
-    private JSONObject location;
     private Location mCurrentLocation;
     private GoogleMap map;
 
@@ -145,14 +144,14 @@ public class MapsFragment extends Fragment {
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
+                    rvPlaces.setAdapter(MapsViewModel.createAdapter(fragment));
                     // Locate nearby places
-                    findAPlace(search);
+                    MapsViewModel.getPlaces(search, getContext(), getViewLifecycleOwner());
+
                     // Make recyclerview visible at the bottom
                     rvPlaces.setVisibility(View.VISIBLE);
                     // Initialize recyclerview
-                    locations = new ArrayList<>();
-                    adapter = new PlacesAdapter(fragment, locations);
-                    rvPlaces.setAdapter(adapter);
+
                     LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
                     rvPlaces.setLayoutManager(layoutManager);
 
@@ -162,75 +161,6 @@ public class MapsFragment extends Fragment {
                 }
             }
         });
-    }
-
-    private void findAPlace(String search) {
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params = new RequestParams();
-        params.put("key",  getString(R.string.google_maps_key));
-
-        // Search for relevant nearby locations
-        String coords = mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude();
-        params.put("location", coords);
-        params.put("radius", SEARCH_RADIUS);
-        params.put("keyword", search);
-        params.put("opennow", true);
-        Log.i(TAG, "Coordinates: " + coords);
-        //params.put("fields", "formatted_address,name,geometry");
-
-        client.get(NEARBY_SEARCH_URL, params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Headers headers, JSON json) {
-                Log.i(TAG, "Places API Response: " + json.toString());
-                // Add places to recyclerview
-                try {
-                    JSONArray array = json.jsonObject.getJSONArray("results");
-                    addPlaces(array);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.i(TAG, "Error retrieving places results");
-                    Toast.makeText(getContext(), "Error retrieving places results", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                Log.i(TAG, "Error searching places");
-                Toast.makeText(getContext(), "Error searching places", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void addPlaces(JSONArray array) throws JSONException {
-        for (int i = 0; i < array.length(); i++) {
-            final JSONObject newLocation = (JSONObject) array.get(i);
-            final String placeId = newLocation.getString("place_id");
-
-            // Search if this location is already saved
-            Log.i(TAG, "Searching for Place id: " + placeId);
-            ParseQuery<com.example.covidnow.models.Location> query =  ParseQuery.getQuery("Location");
-            query.include(com.example.covidnow.models.Location.KEY_PLACE_ID);
-            query.whereEqualTo("place_id", placeId);
-            query.getFirstInBackground(new GetCallback<com.example.covidnow.models.Location>() {
-                @Override
-                public void done(com.example.covidnow.models.Location object, ParseException e) {
-                    if (object == null) {
-                        // no location saved, must create new one
-                        try {
-                            Log.i(TAG, "This location was NOT previously saved " + placeId);
-                            locations.add(com.example.covidnow.models.Location.fromJson(newLocation));
-                        } catch (JSONException ex) {
-                            ex.printStackTrace();
-                        }
-                    } else {
-                        // The location was saved in parse
-                        Log.i(TAG, "* This location WAS previously saved " + placeId);
-                        locations.add(object);
-                    }
-                    adapter.notifyDataSetChanged();
-                }
-            });
-        }
     }
 
     @Override
@@ -253,8 +183,11 @@ public class MapsFragment extends Fragment {
                     public void onSuccess(Location location2) {
                         if (location2 != null) {
                             Log.i(TAG, "Location: " + location2.toString());
+                            // Give coordinates to view model
+                            MapsViewModel.getCoordinates().setValue(Pair.create(location2.getLatitude(), location2.getLongitude()));
                             mCurrentLocation = location2;
-                            getAddressFromLocation(location2);
+                            moveCameraToLocation(location2);
+                            // Listen for location changes
                             onLocationChanged(location2);
                         }
                     }
@@ -273,7 +206,7 @@ public class MapsFragment extends Fragment {
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    private void getAddressFromLocation(Location loc) {
+    private void moveCameraToLocation(Location loc) {
         double x = loc.getLatitude();
         double y = loc.getLongitude();
         // Set camera to user's current location
@@ -281,22 +214,6 @@ public class MapsFragment extends Fragment {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currLocationLatLng, 17);
         map.animateCamera(cameraUpdate);
 
-        // Get address from Geocoding API
-        AsyncHttpClient client = new AsyncHttpClient();
-        String geoUrl = GEOCODE_URL + x + "," + y + "&key=" + getString(R.string.google_maps_key);
-        Log.i(TAG, geoUrl);
-        client.get(geoUrl, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Headers headers, JSON json) {
-                Log.i(TAG, "Response" + " " + json.toString());
-                location = json.jsonObject;
-            }
-
-            @Override
-            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-
-            }
-        });
     }
 
     /*

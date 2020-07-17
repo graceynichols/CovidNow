@@ -1,14 +1,17 @@
 package com.example.covidnow.viewmodels;
 
+import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -19,6 +22,7 @@ import com.codepath.asynchttpclient.RequestParams;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.R;
 import com.example.covidnow.adapter.ArticlesAdapter;
+import com.example.covidnow.fragment.HomeFragment;
 import com.example.covidnow.models.Article;
 import com.example.covidnow.repository.GeocodingRepository;
 import com.example.covidnow.repository.NewsRepository;
@@ -32,7 +36,7 @@ import java.util.List;
 
 import okhttp3.Headers;
 
-public class HomeViewModel extends ViewModel {
+public class HomeViewModel extends AndroidViewModel {
     private static final String TAG = "HomeViewModel";
 
     private static MutableLiveData<String> caseCount;
@@ -40,9 +44,17 @@ public class HomeViewModel extends ViewModel {
     private static List<Article> adapterArticles = new ArrayList<>();
     private static MutableLiveData<JSONObject> jsonLocation;
     private static MutableLiveData<Pair<Double,Double>> coordinates;
+    private static NewsRepository newsRepository;
+    private static GeocodingRepository geocodingRepository;
 
     // Recyclerview setup
     private static ArticlesAdapter adapter;
+
+    public HomeViewModel(@NonNull Application application) {
+        super(application);
+        this.newsRepository = new NewsRepository();
+        this.geocodingRepository = new GeocodingRepository();
+    }
 
     public static void initializeHomeViewModel(final Fragment fragment, LifecycleOwner lfOwner) {
         adapter = new ArticlesAdapter(fragment, adapterArticles);
@@ -52,15 +64,15 @@ public class HomeViewModel extends ViewModel {
             @Override
             public void onChanged(@Nullable final Pair<Double, Double> newCoord) {
                 // Location is ready to be passed to news api
-                Log.i(TAG, "Location received from View Model");
+                Log.i(TAG, "Location received from HomeFragment");
                 // Query location from geocoding API
-                GeocodingRepository.queryGeocodeLocation(newCoord.first, newCoord.second, fragment.getContext());
+                //geocodingRepository.queryGeocodeLocation(newCoord.first, newCoord.second, fragment.getContext());
                 //NewsRepository.queryNews(fragment.getContext(), newCoord);
             }
         };
-        // Listen for location to be ready to give to new API
         HomeViewModel.getCoordinates().observe(lfOwner, coordsObserver);
 
+        // Listen for response from geocoding API to give to news API
         final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
             @Override
             public void onChanged(@Nullable final JSONObject newLocation) {
@@ -70,9 +82,11 @@ public class HomeViewModel extends ViewModel {
                 NewsRepository.queryNews(fragment.getContext(), newLocation);
             }
         };
-        // Listen for location to be ready to give to new API
         HomeViewModel.getJsonLocation().observe(lfOwner, locObserver);
+
     }
+
+
 
     public static List<Article> getAdapterArticles() {
         return adapterArticles;

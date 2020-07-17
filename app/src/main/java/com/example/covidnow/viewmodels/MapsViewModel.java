@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import com.example.covidnow.adapter.PlacesAdapter;
+import com.example.covidnow.models.Article;
 import com.example.covidnow.models.Location;
 import com.example.covidnow.repository.ParseRepository;
 import com.example.covidnow.repository.PlacesRepository;
@@ -29,11 +30,12 @@ public class MapsViewModel {
     private static MutableLiveData<Pair<Double, Double>> coordinates;
     private static MutableLiveData<List<Location>> nearbyPlacesList;
     private static MutableLiveData<JSONArray> nearbyPlacesJson;
+    private static List<Location> adapterPlaces = new ArrayList<>();
     private static PlacesAdapter adapter;
 
     public static PlacesAdapter createAdapter(Fragment fragment) {
-        getNearbyPlacesList().setValue(new ArrayList<Location>());
-        adapter = new PlacesAdapter(fragment, getNearbyPlacesList().getValue());
+        adapterPlaces = new ArrayList<>();
+        adapter = new PlacesAdapter(fragment, adapterPlaces);
         return adapter;
     }
 

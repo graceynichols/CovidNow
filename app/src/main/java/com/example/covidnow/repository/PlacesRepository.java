@@ -1,6 +1,7 @@
 package com.example.covidnow.repository;
 
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -53,6 +54,7 @@ public class PlacesRepository {
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                 Log.i(TAG, "Error searching places");
+                Looper.prepare();
                 Toast.makeText(context, "Error searching places", Toast.LENGTH_SHORT).show();
             }
         });

@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.covidnow.R;
+import com.example.covidnow.databinding.ActivityLoginBinding;
 import com.example.covidnow.viewmodels.ComposeReviewViewModel;
 import com.example.covidnow.viewmodels.LoginViewModel;
 import com.parse.LogInCallback;
@@ -24,38 +25,30 @@ import com.parse.SignUpCallback;
 public class LoginActivity extends AppCompatActivity {
 
     public static final String TAG = "LoginActivity";
-    private static final int USERNAME_ERROR_CODE = 202;
+    private static ActivityLoginBinding binding;
     private LoginViewModel mViewModel;
-    private EditText etUsername;
-    private EditText etPassword;
-    private EditText etEmail;
-    private Button btnLogin;
-    private Button btnSignup;
-    private ProgressBar pb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        View view = binding.getRoot();
+        setContentView(view);
         mViewModel = ViewModelProviders.of(this).get(LoginViewModel.class);
 
         if (ParseUser.getCurrentUser() != null) {
             Log.i(TAG, "Logging in: " + ParseUser.getCurrentUser().getUsername());
             goMainActivity();
         }
-        pb = findViewById(R.id.pbLoading);
-        etUsername = findViewById(R.id.etUsername);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnSignup = findViewById(R.id.btnSignup);
-        etEmail = findViewById(R.id.etEmail);
-        btnLogin.setOnClickListener(new View.OnClickListener() {
+
+        binding.btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "onClick login button");
-                pb.setVisibility(ProgressBar.VISIBLE);
-                String username = etUsername.getText().toString();
-                String password = etPassword.getText().toString();
+                binding.pbLoading.setVisibility(ProgressBar.VISIBLE);
+                String username = binding.etUsername.getText().toString();
+                String password = binding.etPassword.getText().toString();
                 mViewModel.loginUser(username, password,  new LogInCallback() {
                     @Override
                     public void done(ParseUser user, ParseException e) {
@@ -66,24 +59,24 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
-                pb.setVisibility(View.GONE);
+                binding.pbLoading.setVisibility(View.GONE);
             }
         });
         // On click listener for sign up button
-        btnSignup.setOnClickListener(new View.OnClickListener() {
+        binding.btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btnLogin.setVisibility(View.GONE);
-                etEmail.setVisibility(View.VISIBLE);
+                binding.btnLogin.setVisibility(View.GONE);
+                binding.etEmail.setVisibility(View.VISIBLE);
                 Log.i(TAG, "onClick signup button");
 
-                btnSignup.setOnClickListener(new View.OnClickListener() {
+                binding.btnSignup.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        String username = etUsername.getText().toString();
-                        String password = etPassword.getText().toString();
-                        String email = etEmail.getText().toString();
-                        pb.setVisibility(ProgressBar.VISIBLE);
+                        String username = binding.etUsername.getText().toString();
+                        String password = binding.etPassword.getText().toString();
+                        String email = binding.etEmail.getText().toString();
+                        binding.pbLoading.setVisibility(ProgressBar.VISIBLE);
                         // Make sure username and password pass basic requirements
                         if (username.equals("")) {
                             Toast.makeText(getApplicationContext(), "Username missing!", Toast.LENGTH_SHORT).show();
@@ -99,13 +92,13 @@ public class LoginActivity extends AppCompatActivity {
                             public void done(ParseException e) {
                                 if (e == null) {
                                     // Hooray! Let them use the app now.
-                                    pb.setVisibility(ProgressBar.INVISIBLE);
+                                    binding.pbLoading.setVisibility(ProgressBar.INVISIBLE);
                                     Toast.makeText(getApplicationContext(), "Successful sign up!", Toast.LENGTH_SHORT).show();
                                     goMainActivity();
                                 } else {
                                     // Sign up didn't succeed. Look at the ParseException
                                     // to figure out what went wrong
-                                    pb.setVisibility(ProgressBar.INVISIBLE);
+                                    binding.pbLoading.setVisibility(ProgressBar.INVISIBLE);
                                     if (e.getCode() == ParseException.USERNAME_TAKEN) {
                                         Toast.makeText(getApplicationContext(), "Username already taken", Toast.LENGTH_SHORT).show();
                                     } else if (e.getCode() == ParseException.INVALID_EMAIL_ADDRESS){

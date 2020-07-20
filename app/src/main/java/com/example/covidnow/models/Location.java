@@ -43,20 +43,6 @@ public class Location extends ParseObject {
         return location;
     }
 
-    public static void saveLocation(Location newLocation) {
-        newLocation.setUpdatedAt();
-        newLocation.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "Error while saving location", e);
-                } else {
-                    Log.i(TAG, "Location save sucessful");
-                }
-            }
-        });
-    }
-
     public String getPlaceId() {return getString(KEY_PLACE_ID); }
 
     public void setPlaceId(String id) { put(KEY_PLACE_ID, id); }

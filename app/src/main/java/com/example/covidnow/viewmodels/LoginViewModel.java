@@ -33,34 +33,9 @@ public class LoginViewModel extends AndroidViewModel {
 
     public void signupUser(Context context, String username, String password, String email, SignUpCallback signUpCallback) {
         Log.i(TAG, "Attempting to signup user " + username);
+        parseRepository.createNewUser(username, password, email, signUpCallback);
 
-        ParseUser user = new ParseUser();
-        // Set core properties
-        user.setUsername(username);
-        user.setPassword(password);
-        user.setEmail(email);
-        user.put("numReviews", 0);
-        // Invoke signUpInBackground
-        user.signUpInBackground(signUpCallback);
     }
 
-    private boolean passwordValidityCheck(Context context, String username, String password) {
-        if (username.equals("")) {
-            Toast.makeText(context, "Username missing!", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (password.equals("")) {
-            Toast.makeText(context, "Password missing!", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (password.length() < 6) {
-            Toast.makeText(context, "Password must be at least 6 characters!", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (password.equals(username)) {
-            Toast.makeText(context, "Password cannot be the same as username", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
-    }
+
 }

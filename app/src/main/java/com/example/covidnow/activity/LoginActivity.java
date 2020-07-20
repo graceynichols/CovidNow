@@ -84,6 +84,16 @@ public class LoginActivity extends AppCompatActivity {
                         String password = etPassword.getText().toString();
                         String email = etEmail.getText().toString();
                         pb.setVisibility(ProgressBar.VISIBLE);
+                        // Make sure username and password pass basic requirements
+                        if (username.equals("")) {
+                            Toast.makeText(getApplicationContext(), "Username missing!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if (password.equals("")) {
+                            Toast.makeText(getApplicationContext(), "Password missing!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // Signup user
                         mViewModel.signupUser(getApplicationContext(), username, password, email, new SignUpCallback() {
                             @Override
                             public void done(ParseException e) {

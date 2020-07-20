@@ -8,7 +8,9 @@ import com.example.covidnow.viewmodels.MapsViewModel;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.parse.SignUpCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,5 +49,16 @@ public class ParseRepository {
                 }
             }
         });
+    }
+
+    public void createNewUser(String username, String password, String email, SignUpCallback signUpCallback) {
+        ParseUser user = new ParseUser();
+        // Set core properties
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
+        user.put("numReviews", 0);
+        // Invoke signUpInBackground
+        user.signUpInBackground(signUpCallback);
     }
 }

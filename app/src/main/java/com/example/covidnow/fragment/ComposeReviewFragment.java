@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -25,6 +26,8 @@ import android.widget.Toast;
 
 import com.example.covidnow.models.Location;
 import com.example.covidnow.R;
+import com.example.covidnow.viewmodels.ComposeReviewViewModel;
+import com.example.covidnow.viewmodels.MapsViewModel;
 import com.parse.ParseFile;
 
 import org.parceler.Parcels;
@@ -47,23 +50,23 @@ public class ComposeReviewFragment extends Fragment {
     private File photoFile;
     private ProgressBar pb;
     private boolean photoFlag = false;
+    private ComposeReviewViewModel mViewModel;
 
     public ComposeReviewFragment() {
     }
 
-    // The onCreateView method is called when Fragment should create its View object hierarchy,
-    // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_compose_review, parent, false);
     }
 
-    // This event is triggered soon after onCreateView().
-    // onViewCreated() is only called if the view returned from onCreateView() is non-null.
-    // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Set view model
+        mViewModel = ViewModelProviders.of(this).get(ComposeReviewViewModel.class);
+
         btnCaptureImage = view.findViewById(R.id.btnCaptureImage);
         ivPostImage = view.findViewById(R.id.ivPostImage);
         btnSubmit = view.findViewById(R.id.btnSubmit);
@@ -78,6 +81,7 @@ public class ComposeReviewFragment extends Fragment {
             switchHotspot.setChecked(true);
             ivHotspot.setVisibility(View.VISIBLE);
         }
+        // Show caution symbol if marked as hotspot
         switchHotspot.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -104,13 +108,7 @@ public class ComposeReviewFragment extends Fragment {
                 // Start progress bar
                 pb.setVisibility(ProgressBar.VISIBLE);
 
-                if (photoFile != null) {
-                   // They added a photo
-                    location.setImage(new ParseFile(photoFile));
-                }
-                boolean isHotspot = switchHotspot.isChecked();
-                location.setIsHotspot(isHotspot);
-                Location.saveLocation(location);
+                mViewModel.saveReview(location, photoFile, switchHotspot.isChecked());
                 pb.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Review Saved!", Toast.LENGTH_SHORT).show();
 

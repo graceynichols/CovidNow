@@ -160,7 +160,7 @@ public class MapsFragment extends Fragment {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    mViewModel.getPlaces(coordinates, search, getString(R.string.google_maps_key), getViewLifecycleOwner());
+                    mViewModel.getPlaces(coordinates, search, getString(R.string.google_maps_key));
 
                     // Listen for nearby places JSON from PlacesRepository
                     final Observer<JSONArray> placesJSONObserver = new Observer<JSONArray>() {

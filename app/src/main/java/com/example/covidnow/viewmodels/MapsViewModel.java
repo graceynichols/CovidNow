@@ -50,7 +50,7 @@ public class MapsViewModel extends AndroidViewModel {
         this.parseRepository = new ParseRepository();
     }
 
-    public void getPlaces(final Pair<Double, Double> newCoords, final String search, String apiKey, LifecycleOwner lfOwner) {
+    public void getPlaces(final Pair<Double, Double> newCoords, final String search, String apiKey) {
         // Listen for coordinates from MapsFragment
         Log.i(TAG, "Coordinates received from MapsFragment");
         placesRepository.findAPlace(search, newCoords.first, newCoords.second, apiKey, new JsonHttpResponseHandler() {

@@ -30,7 +30,7 @@ public class ComposeReviewViewModel extends AndroidViewModel {
             // They added a photo
             location.setImage(photoFile);
         }
-        location.setIsHotspot(checked);
+        location.setHotspot(checked);
         parseRepository.saveLocation(location);
         // Add one to this user's review count
         if (user.getNumber(KEY_NUM_REVIEWS) != null) {

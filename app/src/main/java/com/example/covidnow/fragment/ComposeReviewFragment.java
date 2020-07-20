@@ -29,6 +29,7 @@ import com.example.covidnow.R;
 import com.example.covidnow.viewmodels.ComposeReviewViewModel;
 import com.example.covidnow.viewmodels.MapsViewModel;
 import com.parse.ParseFile;
+import com.parse.ParseUser;
 
 import org.parceler.Parcels;
 
@@ -108,7 +109,7 @@ public class ComposeReviewFragment extends Fragment {
                 // Start progress bar
                 pb.setVisibility(ProgressBar.VISIBLE);
 
-                mViewModel.saveReview(location, photoFile, switchHotspot.isChecked());
+                mViewModel.saveReview(location, photoFile, ParseUser.getCurrentUser(), switchHotspot.isChecked());
                 pb.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Review Saved!", Toast.LENGTH_SHORT).show();
 

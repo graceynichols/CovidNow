@@ -116,6 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         user.setUsername(username);
         user.setPassword(password);
         user.setEmail(email);
+        user.put("numReviews", 0);
         // Invoke signUpInBackground
         user.signUpInBackground(new SignUpCallback() {
             public void done(ParseException e) {

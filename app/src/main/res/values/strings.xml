@@ -4,9 +4,6 @@
     <string name="signup">Signup</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
-    <string name="username">Username</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="textview">TextView</string>
     <string name="search_places">Search Places</string>
     <string name="last_hotspot_designation">Last Hotspot Designation:</string>
@@ -14,4 +11,7 @@
     <string name="take_picture">Take Picture</string>
     <string name="submit">Submit</string>
     <string name="last_updated">Last Updated:</string>
+    <string name="username">Username</string>
+    <string name="reviews">Reviews:</string>
+    <string name="logout">Logout</string>
 </resources>

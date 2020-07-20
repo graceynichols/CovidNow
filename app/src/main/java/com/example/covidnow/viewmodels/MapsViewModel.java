@@ -50,10 +50,10 @@ public class MapsViewModel extends AndroidViewModel {
         this.parseRepository = new ParseRepository();
     }
 
-    public void getPlaces(final Pair<Double, Double> newCoords, final String search, final Context context, LifecycleOwner lfOwner) {
+    public void getPlaces(final Pair<Double, Double> newCoords, final String search, String apiKey, LifecycleOwner lfOwner) {
         // Listen for coordinates from MapsFragment
         Log.i(TAG, "Coordinates received from MapsFragment");
-        placesRepository.findAPlace(search, newCoords.first, newCoords.second, context.getString(R.string.google_maps_key), new JsonHttpResponseHandler() {
+        placesRepository.findAPlace(search, newCoords.first, newCoords.second, apiKey, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 try {
@@ -63,60 +63,51 @@ public class MapsViewModel extends AndroidViewModel {
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.i(TAG, "Error retrieving places results");
-                    Toast.makeText(context, "Error retrieving places results", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                 Log.i(TAG, "Error searching places");
-                Toast.makeText(context, "Error searching places", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        // Listen for nearby places JSON from PlacesRepository
-        final Observer<JSONArray> placesJSONObserver = new Observer<JSONArray>() {
-            @Override
-            public void onChanged(@Nullable final JSONArray jArray) {
-                // Location is ready to be passed to Places API
-                Log.i(TAG, "Places JSON received from PlacesRepo");
-                // Search each place in Parse
-                try {
-                    final List<Location> finalPlaces = new ArrayList<>();
-                    for (int i = 0; i < jArray.length(); i++) {
-                        final int ii = i;
-                        final JSONObject newLocation = (JSONObject) jArray.get(i);
-                        final String placeId = newLocation.getString("place_id");
-                        parseRepository.searchPlace(placeId, new GetCallback<Location>() {
-                            @Override
-                            public void done(Location object, ParseException e) {
-                                if (object == null) {
-                                    // no location saved, must create new one
-                                    try {
-                                        Log.i(TAG, "This location was NOT previously saved " + placeId);
-                                        finalPlaces.add(com.example.covidnow.models.Location.fromJson(newLocation));
-                                    } catch (JSONException ex) {
-                                        ex.printStackTrace();
-                                        Log.i(TAG, "Error parsing location from JSON");
-                                    }
-                                } else {
-                                    // The location was saved in parse
-                                    Log.i(TAG, "* This location WAS previously saved " + placeId);
-                                    finalPlaces.add(object);
-                                }
-                                if (ii == jArray.length() - 1) {
-                                    // We've reached the end of the list
-                                    nearbyPlacesList.postValue(finalPlaces);
-                                }
+    public void getSavedPlaces(final JSONArray jArray) {
+        // Search each place in Parse
+        try {
+            final List<com.example.covidnow.models.Location> finalPlaces = new ArrayList<>();
+            for (int i = 0; i < jArray.length(); i++) {
+                final int ii = i;
+                final JSONObject newLocation = (JSONObject) jArray.get(i);
+                final String placeId = newLocation.getString("place_id");
+                parseRepository.searchPlace(placeId, new GetCallback<com.example.covidnow.models.Location>() {
+                    @Override
+                    public void done(com.example.covidnow.models.Location object, ParseException e) {
+                        if (object == null) {
+                            // no location saved, must create new one
+                            try {
+                                Log.i(TAG, "This location was NOT previously saved " + placeId);
+                                finalPlaces.add(com.example.covidnow.models.Location.fromJson(newLocation));
+                            } catch (JSONException ex) {
+                                ex.printStackTrace();
+                                Log.i(TAG, "Error parsing location from JSON");
                             }
-                        });
+                        } else {
+                            // The location was saved in parse
+                            Log.i(TAG, "* This location WAS previously saved " + placeId);
+                            finalPlaces.add(object);
+                        }
+                        if (ii == jArray.length() - 1) {
+                            // We've reached the end of the list
+                            nearbyPlacesList.postValue(finalPlaces);
+                        }
                     }
-                } catch (Exception e) {
-                    Log.i(TAG, "Error parsing JSON location");
-                }
+                });
             }
-        };
-        getNearbyPlacesJson().observe(lfOwner, placesJSONObserver);
+        } catch (Exception e) {
+            Log.i(TAG, "Error parsing JSON location");
+        }
     }
 
     public LiveData<List<Location>> getNearbyPlacesList() {

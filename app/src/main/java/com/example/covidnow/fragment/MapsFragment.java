@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -151,6 +152,8 @@ public class MapsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String search = etSearch.getText().toString();
+                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+                mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {

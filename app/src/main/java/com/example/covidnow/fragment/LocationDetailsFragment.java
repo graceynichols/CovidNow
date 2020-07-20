@@ -74,6 +74,7 @@ public class LocationDetailsFragment extends Fragment {
         }
 
         if (location.getImage() != null) {
+            Log.i(TAG, "Location has picture");
             Glide.with(getContext()).load(location.getImage().getUrl()).centerCrop().into(ivImage);
         } else {
             Log.i(TAG, "Location has no picture");

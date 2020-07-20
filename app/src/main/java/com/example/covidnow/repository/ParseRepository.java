@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParseRepository {
+
     private static final String TAG = "ParseRepository";
+    public static final String KEY_NUM_REVIEWS = "numReviews";
 
     public void searchPlace(String placeId, GetCallback<Location> locationGetCallback) {
         // Search if this location is already saved

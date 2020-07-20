@@ -11,8 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.example.covidnow.databinding.ActivityLoginBinding
 import com.example.covidnow.viewmodels.LoginViewModel
+import com.parse.LogInCallback
 import com.parse.ParseException
 import com.parse.ParseUser
+import com.parse.SignUpCallback
 
 class LoginActivity : AppCompatActivity() {
     private var mViewModel: LoginViewModel? = null
@@ -31,13 +33,14 @@ class LoginActivity : AppCompatActivity() {
             binding?.pbLoading?.visibility = ProgressBar.VISIBLE
             val username = binding?.etUsername?.text.toString()
             val password = binding?.etPassword?.text.toString()
-            mViewModel?.loginUser(username, password) { _, e ->
+            val loginCallback: LogInCallback? = LogInCallback { user, e ->
                 if (e != null) {
                     Log.e(TAG, "Issue with login", e)
                 } else {
                     goMainActivity()
                 }
             }
+            mViewModel?.loginUser(username, password, loginCallback)
             binding?.pbLoading?.visibility = View.GONE
         }
         // On click listener for sign up button
@@ -60,7 +63,7 @@ class LoginActivity : AppCompatActivity() {
                     return@OnClickListener
                 }
                 // Signup user
-                mViewModel?.signupUser(username, password, email) { e ->
+                val signupCallback = SignUpCallback {  e: ParseException? ->
                     if (e == null) {
                         // Hooray! Let them use the app now.
                         binding?.pbLoading?.visibility = ProgressBar.INVISIBLE
@@ -80,6 +83,7 @@ class LoginActivity : AppCompatActivity() {
                         Log.i(TAG, e.toString())
                     }
                 }
+                mViewModel?.signupUser(username, password, email, signupCallback)
             })
         })
     }

@@ -106,6 +106,18 @@ public class HomeFragment extends Fragment {
         Log.i(TAG, "Getting current location");
         HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
 
+        // Listen for response from geocoding API to give to news API
+        final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
+            @Override
+            public void onChanged(@Nullable final JSONObject newLocation) {
+                // Location is ready to be passed to news api
+                mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            }
+        };
+
+        // Listen for JSON location to be put
+        mViewModel.getJsonLocation().observe(fragment.getViewLifecycleOwner(), locObserver);
+
         // Listen for case count from news API
         final Observer<String> caseCountObserver = new Observer<String>() {
             @Override
@@ -130,7 +142,6 @@ public class HomeFragment extends Fragment {
         };
         // Listen for news to be ready to post on home screen
         mViewModel.getAllArticles().observe(getViewLifecycleOwner(), newsObserver);
-
     }
 
     @Override
@@ -151,7 +162,7 @@ public class HomeFragment extends Fragment {
                         if (location != null) {
                             Log.i(TAG, "Google Maps Coordinates: " + location.toString());
                             // Retrieve news data from HomeViewModel
-                            mViewModel.getNews(fragment, Pair.create(location.getLatitude(), location.getLongitude()));
+                            mViewModel.getAddress(getString(R.string.google_maps_key), Pair.create(location.getLatitude(), location.getLongitude()));
                         }
                     }
                 })

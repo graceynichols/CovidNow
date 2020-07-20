@@ -54,9 +54,9 @@ public class HomeViewModel extends AndroidViewModel {
         this.geocodingRepository = new GeocodingRepository();
     }
 
-    public void getNews(final Fragment fragment, Pair<Double, Double> newCoords) {
+    public void getAddress(String apiKey, Pair<Double, Double> newCoords) {
         // Retrieve location JSON from GeocodingRepo
-        geocodingRepository.queryGeocodeLocation(newCoords.first, newCoords.second, fragment.getContext(), new JsonHttpResponseHandler() {
+        geocodingRepository.queryGeocodeLocation(newCoords.first, newCoords.second, apiKey, new JsonHttpResponseHandler() {
             // Pass in response handler
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
@@ -69,72 +69,61 @@ public class HomeViewModel extends AndroidViewModel {
             }
         });
 
-        // Listen for response from geocoding API to give to news API
-        final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
+    }
+
+    public void getCovidNews(JSONObject newLocation, String apiKey) {
+        final Pair<String, String> stateInfo;
+        Log.i(TAG, "JSON Location received from View Model: " + newLocation.toString());
+        try {
+            // Turn location into ISO code
+            stateInfo = locationToISO(newLocation);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Unable to convert location to ISO code");
+            return;
+        }
+
+        // Query case count from news repo
+        newsRepository.queryCaseCount(stateInfo.first, apiKey, new JsonHttpResponseHandler() {
             @Override
-            public void onChanged(@Nullable final JSONObject newLocation) {
-                // Location is ready to be passed to news api
-                final Pair<String, String> stateInfo;
-                Log.i(TAG, "JSON Location received from View Model: " + newLocation.toString());
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, "News Response: " + json.toString());
                 try {
-                    // Turn location into ISO code
-                    stateInfo = locationToISO(newLocation);
+
+                    String cases = stateInfo.second + " Case Count: " +
+                            json.jsonObject.getJSONObject("stats")
+                                    .getString("totalConfirmedCases");
+                    // Post case value to case count
+                    caseCount.postValue(cases);
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.e(TAG, "Unable to convert location to ISO code");
-                    return;
+                    Log.i(TAG, "Error retrieving stats for current location");
                 }
-
-                // Query case count from news repo
-                newsRepository.queryCaseCount(stateInfo.first, fragment.getContext().getString(R.string.covid_news_key), new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        Log.i(TAG, "News Response: " + json.toString());
-                        try {
-
-                            String cases = stateInfo.second + " Case Count: " +
-                                    json.jsonObject.getJSONObject("stats")
-                                            .getString("totalConfirmedCases");
-                            // Post case value to case count
-                            caseCount.postValue(cases);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.i(TAG, "Error retrieving stats for current location");
-                            Toast.makeText(fragment.getContext(), "Unable to retrieve stats for current location", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                        Log.i(TAG, "Error retrieving stats for current location");
-                        Toast.makeText(fragment.getContext(), "Unable to retrieve stats for current location", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                // Query news from news Repo
-                newsRepository.queryNews(fragment.getContext().getString(R.string.covid_news_key), stateInfo.first, new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        try {
-                            JSONArray news = json.jsonObject.getJSONArray("news");
-                            Log.i(TAG, "News: " + news.toString());
-                            addNews(news);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.i(TAG, "Error retrieving news for current location");
-                            Toast.makeText(fragment.getContext(), "Unable to retrieve news for current location", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                        Log.i(TAG, "Error retrieving news for current location");
-                        Toast.makeText(fragment.getContext(), "Unable to retrieve news for current location", Toast.LENGTH_SHORT).show();
-                    }
-                });
             }
-        };
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error retrieving stats for current location");
+            }
+        });
 
-        // Listen for JSON location to be put
-        getJsonLocation().observe(fragment.getViewLifecycleOwner(), locObserver);
+        // Query news from news Repo
+        newsRepository.queryNews(apiKey, stateInfo.first, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                try {
+                    JSONArray news = json.jsonObject.getJSONArray("news");
+                    Log.i(TAG, "News: " + news.toString());
+                    addNews(news);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Error retrieving news for current location");
+                }
+            }
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "Error retrieving news for current location");
+            }
+        });
     }
 
     private void addNews(JSONArray news) throws JSONException {

@@ -14,11 +14,11 @@ public class GeocodingRepository {
     private static final String TAG = "GeocodingRepository";
     public static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
 
-    public void queryGeocodeLocation(double x, double y, Context context, JsonHttpResponseHandler jsonHttpResponseHandler) {
+    public void queryGeocodeLocation(double x, double y, String apiKey, JsonHttpResponseHandler jsonHttpResponseHandler) {
         // Make API call to Google's GeoCoding API
         AsyncHttpClient client = new AsyncHttpClient();
 
-        String geoUrl = GEOCODE_URL + x + "," + y + "&key=" + context.getString(R.string.google_maps_key);
+        String geoUrl = GEOCODE_URL + x + "," + y + "&key=" + apiKey;
         Log.i(TAG, "Geo URL: " + geoUrl);
         client.get(geoUrl, jsonHttpResponseHandler);
     }

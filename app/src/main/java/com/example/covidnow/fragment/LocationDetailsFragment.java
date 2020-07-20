@@ -75,7 +75,17 @@ public class LocationDetailsFragment extends Fragment {
 
         if (location.getImage() != null) {
             Log.i(TAG, "Location has picture");
-            Glide.with(getContext()).load(location.getImage().getUrl()).centerCrop().into(ivImage);
+            if (location.getImage().getUrl() == null) {
+                // Picture is saved in arguments
+                Log.i(TAG, "Picture is saved in arguments");
+                if (getArguments().getString(getString(R.string.picture_url)) != null) {
+                    Log.i(TAG, "Got picture");
+                    Glide.with(getContext()).load(getArguments().getString(getString(R.string.picture_url))).centerCrop().into(ivImage);
+                }
+            } else {
+                Glide.with(getContext()).load(location.getImage().getUrl()).centerCrop().into(ivImage);
+            }
+
         } else {
             Log.i(TAG, "Location has no picture");
         }

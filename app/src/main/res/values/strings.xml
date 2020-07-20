@@ -15,4 +15,5 @@
     <string name="reviews">Reviews:</string>
     <string name="logout">Logout</string>
     <string name="email">Email</string>
+    <string name="picture_url">pictureUrl</string>
 </resources>

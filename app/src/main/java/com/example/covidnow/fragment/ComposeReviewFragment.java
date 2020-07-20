@@ -50,7 +50,7 @@ public class ComposeReviewFragment extends Fragment {
     private Location location;
     private File photoFile;
     private ProgressBar pb;
-    private boolean photoFlag = false;
+    private ParseFile photoParseFile = null;
     private ComposeReviewViewModel mViewModel;
 
     public ComposeReviewFragment() {
@@ -108,8 +108,10 @@ public class ComposeReviewFragment extends Fragment {
             public void onClick(View view) {
                 // Start progress bar
                 pb.setVisibility(ProgressBar.VISIBLE);
-
-                mViewModel.saveReview(location, photoFile, ParseUser.getCurrentUser(), switchHotspot.isChecked());
+                if (photoFile != null) {
+                    photoParseFile = new ParseFile(photoFile);
+                }
+                mViewModel.saveReview(location, photoParseFile, ParseUser.getCurrentUser(), switchHotspot.isChecked());
                 pb.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Review Saved!", Toast.LENGTH_SHORT).show();
 
@@ -134,6 +136,7 @@ public class ComposeReviewFragment extends Fragment {
         Bundle result = new Bundle();
         // Send this location to the compose fragment
         result.putParcelable("location", Parcels.wrap(location));
+        result.putString(getString(R.string.picture_url), photoParseFile.getUrl());
         newFrag.setArguments(result);
         // Start compose review fragment
         getFragmentManager().beginTransaction().replace(R.id.flContainer,
@@ -170,7 +173,6 @@ public class ComposeReviewFragment extends Fragment {
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
                 ivPostImage.setImageBitmap(takenImage);
-                photoFlag = true;
             } else { // Result was a failure
                 Toast.makeText(getContext(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
             }

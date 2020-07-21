@@ -7,6 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.covidnow.R
 import com.example.covidnow.fragment.ArticleDetailsFragment
@@ -32,8 +36,9 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
                 // Start article details fragment
                 val newFrag: Fragment = ArticleDetailsFragment()
                 newFrag.arguments = result
+                //fragment.findNavController().navigate(R.id.action_global_articleDetailsFragment, result)
                 fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
-                        newFrag)?.commit()
+                       newFrag)?.commit()
             }
         }
 

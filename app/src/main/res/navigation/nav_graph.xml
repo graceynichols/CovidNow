@@ -12,26 +12,17 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_homeFragment_to_articleDetailsFragment2"
+            android:id="@+id/action_homeFragment_to_articleDetailsFragment"
             app:destination="@id/articleDetailsFragment"
             app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@anim/fragment_open_exit" />
-        <action
-            android:id="@+id/action_homeFragment_to_mapsFragment"
-            app:destination="@id/mapsFragment"
-            app:enterAnim="@anim/fragment_open_enter"
-            app:exitAnim="@anim/fragment_open_exit" />
-        <action
-            android:id="@+id/action_homeFragment_to_profileFragment"
-            app:destination="@id/profileFragment"
-            app:enterAnim="@anim/fragment_open_enter"
             app:exitAnim="@anim/fragment_open_exit" />
     </fragment>
     <fragment
         android:id="@+id/articleDetailsFragment"
         android:name="com.example.covidnow.fragment.ArticleDetailsFragment"
         android:label="fragment_article_details"
-        tools:layout="@layout/fragment_article_details" />
+        tools:layout="@layout/fragment_article_details" >
+    </fragment>
     <fragment
         android:id="@+id/mapsFragment"
         android:name="com.example.covidnow.fragment.MapsFragment"
@@ -63,4 +54,26 @@
             app:enterAnim="@anim/fragment_open_enter"
             app:exitAnim="@anim/fragment_open_exit" />
     </fragment>
+    <action
+        android:id="@+id/action_global_mapsFragment"
+        app:destination="@id/mapsFragment"
+        app:enterAnim="@anim/fragment_open_enter" />
+    <action
+        android:id="@+id/action_global_profileFragment"
+        app:destination="@id/profileFragment"
+        app:enterAnim="@anim/fragment_open_enter" >
+        <action
+            android:id="@+id/action_action_global_profileFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:enterAnim="@anim/fragment_open_enter" />
+    </action>
+    <action
+        android:id="@+id/action_global_homeFragment"
+        app:destination="@id/homeFragment"
+        app:enterAnim="@anim/fragment_open_enter" />
+    <action
+        android:id="@+id/action_global_articleDetailsFragment"
+        app:destination="@id/articleDetailsFragment"
+        app:enterAnim="@anim/fragment_open_enter"
+        app:exitAnim="@anim/fragment_open_exit" />
 </navigation>

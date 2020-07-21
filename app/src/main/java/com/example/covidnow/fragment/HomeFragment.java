@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +59,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvArticles;
     private Fragment fragment = this;
     private TextView tvCases;
+    private ProgressBar pbLoading;
     private HomeViewModel mViewModel;
     private static List<Article> adapterArticles;
     private static ArticlesAdapter adapter;
@@ -88,11 +90,15 @@ public class HomeFragment extends Fragment {
         mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
         rvArticles = view.findViewById(R.id.rvArticles);
         tvCases = view.findViewById(R.id.tvCases);
+        pbLoading = view.findViewById(R.id.pbLoading);
 
         // Adapter setup
         adapterArticles = new ArrayList<>();
         adapter = new ArticlesAdapter(this, adapterArticles);
         rvArticles.setAdapter(adapter);
+
+        // Show progress bar while loading
+        pbLoading.setVisibility(View.VISIBLE);
 
         // Set recyclerview layoutmanager
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -138,6 +144,8 @@ public class HomeFragment extends Fragment {
                 Log.i(TAG, "News received from View Model");
                 adapterArticles.addAll(news);
                 adapter.notifyDataSetChanged();
+                // Hide progress bar
+                pbLoading.setVisibility(View.GONE);
             }
         };
         // Listen for news to be ready to post on home screen

@@ -60,8 +60,6 @@ class MainActivity : AppCompatActivity() {
                         // Go to home fragment
                         displayHome()
                 }
-                //navController.navigate(R.id.nav_host_fragment)
-                //fManager.beginTransaction().replace(R.id.flContainer, fragment).commit()
                 true
             }
         }

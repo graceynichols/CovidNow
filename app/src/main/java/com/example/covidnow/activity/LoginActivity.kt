@@ -1,9 +1,11 @@
 package com.example.covidnow.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -15,6 +17,7 @@ import com.parse.LogInCallback
 import com.parse.ParseException
 import com.parse.ParseUser
 import com.parse.SignUpCallback
+import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
     private var mViewModel: LoginViewModel? = null
@@ -39,6 +42,8 @@ class LoginActivity : AppCompatActivity() {
                     binding?.pbLoading?.visibility = View.GONE
                 } else {
                     binding?.pbLoading?.visibility = View.GONE
+                    // Put keyboard away automatically
+                    view?.hideKeyboard()
                     goMainActivity()
                 }
             }
@@ -70,6 +75,7 @@ class LoginActivity : AppCompatActivity() {
                         // Hooray! Let them use the app now.
                         binding?.pbLoading?.visibility = ProgressBar.INVISIBLE
                         Toast.makeText(applicationContext, "Successful sign up!", Toast.LENGTH_SHORT).show()
+                        view?.hideKeyboard()
                         goMainActivity()
                     } else {
                         // Sign up didn't succeed. Look at the ParseException
@@ -93,6 +99,11 @@ class LoginActivity : AppCompatActivity() {
     private fun goMainActivity() {
         val i = Intent(this, MainActivity::class.java)
         startActivity(i)
+    }
+
+    private fun View.hideKeyboard() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
     }
 
     companion object {

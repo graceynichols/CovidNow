@@ -13,6 +13,8 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.NewsRepository
 import com.example.covidnow.repository.ParseRepository
+import com.parse.GetCallback
+import com.parse.ParseUser
 import com.parse.SaveCallback
 import okhttp3.Headers
 import org.json.JSONArray
@@ -48,11 +50,40 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addToHistory(newLocation: JSONObject, saveCallback: SaveCallback) {
+    fun addLocationToUserHistory(newLocation: JSONObject, saveCallback: SaveCallback) {
         Log.i(TAG, "New Location: $newLocation")
-        parseRepository.addToUserHistory((newLocation.getJSONArray("results")[0] as JSONObject).getString("place_id"), saveCallback)
+        val finalLocation = newLocation.getJSONArray("results")[0] as JSONObject
+        val placeId = (finalLocation).getString("place_id")
+        parseRepository.addToUserHistory(placeId, saveCallback)
         // Make sure older location history is deleted
-        parseRepository.deleteOldHistory()
+        val user = ParseUser.getCurrentUser()
+        var locHistory = user.getJSONArray(ParseRepository.KEY_LOCATION_HISTORY) as JSONArray
+        // Only check if we need to delete if there's too much history
+        if (locHistory.length() > USER_HISTORY_LIMIT) {
+            parseRepository.deleteOldHistory(locHistory, user)
+        }
+        // Now add this user to that location's visitors
+        parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
+            var location: Location? = null
+            if (`object` == null) {
+                // no location saved, must create new one
+                try {
+                    Log.i(TAG, "This location was NOT previously saved $placeId")
+                    // Create this location from the given Json
+                    location = Location.fromGeocodingJson(finalLocation)
+                } catch (ex: JSONException) {
+                    ex.printStackTrace()
+                    Log.i(TAG, "Error parsing location from JSON")
+                }
+            } else {
+                // The location was saved in parse
+                Log.i(TAG, "* This location WAS previously saved $placeId")
+                location = `object`
+            }
+            // Add this user to current location's visitors list
+            location?.let { parseRepository.addVisitorToHistory(it) }
+        })
+
     }
 
     fun getCovidNews(newLocation: JSONObject, apiKey: String?) {
@@ -180,6 +211,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "HomeViewModel"
+        const val USER_HISTORY_LIMIT = 50
     }
 
 }

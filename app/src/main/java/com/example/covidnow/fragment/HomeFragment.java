@@ -113,7 +113,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(@Nullable final JSONObject newLocation) {
                 // Location ready to be saved to history
-                mViewModel.addToHistory(newLocation, new SaveCallback() {
+                mViewModel.addLocationToUserHistory(newLocation, new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
                         Log.i(TAG, "User saved");

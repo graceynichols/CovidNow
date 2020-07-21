@@ -59,6 +59,19 @@ class ProfileFragment : Fragment() {
                     .setAction("Yes", myOnClickListener)
                     .show() // Don’t forget to show!*/
         })
+
+        btnLogout?.setOnClickListener(View.OnClickListener { view ->
+            val myOnClickListener = View.OnClickListener {
+                // Trace people who overlapped with this person's location history
+                mViewModel?.contactTracing()
+                Toast.makeText(context, "People you may have had contact with have been notified", Toast.LENGTH_SHORT).show()
+            }
+            // Make the snackbar
+            Snackbar.make(view, "Are you sure you are positive for COVID-19?", Snackbar.LENGTH_LONG)
+                    .setAction("Yes", myOnClickListener)
+                    .show() // Don’t forget to show!*/
+        })
+
     }
 
     companion object {

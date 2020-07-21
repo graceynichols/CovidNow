@@ -1,5 +1,6 @@
 package com.example.covidnow.repository
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.example.covidnow.models.Location
 import com.parse.*
@@ -26,6 +27,7 @@ class ParseRepository {
     fun saveLocation(newLocation: Location) {
         // Last updated at = current date
         newLocation.setUpdatedAt()
+        newLocation.visitors = JSONArray()
         newLocation.saveInBackground { e ->
             if (e != null) {
                 Log.e(TAG, "Error while saving location", e)
@@ -59,17 +61,42 @@ class ParseRepository {
         if (locHistory == null) {
             locHistory = JSONArray()
         }
-        Log.i(TAG, locHistory.toString())
+        Log.i(TAG, "New place: $newPlace")
         user.put(KEY_LOCATION_HISTORY, locHistory.put(newPlace))
         user.saveInBackground(saveCallback)
     }
 
-    fun deleteOldHistory() {
+    fun addVisitorToHistory(location: Location) {
+        Log.i(TAG, "Adding this visitor to location's history")
+        val user = ParseUser.getCurrentUser()
+        var newVisitor = JSONObject()
+        newVisitor.put(KEY_OBJECT_ID, user.objectId)
+        // Save date visited (current date)
+        newVisitor.put("date", Calendar.getInstance().time)
+        if (location.visitors == null) {
+            location.visitors = JSONArray()
+        }
+        var locHistory: JSONArray? = location.visitors as JSONArray
+
+        if (locHistory == null) {
+            locHistory = JSONArray()
+        }
+        Log.i(TAG, "New visitor: $newVisitor")
+        location.visitors = locHistory.put(newVisitor)
+        Log.i(TAG, "Visitors: $locHistory")
+        location.saveInBackground()
+        if (locHistory.length() >= LOC_HISTORY_LIMIT) {
+            // There's a ton of history stored, lets delete old stuff
+            deleteOldVisitorHistory(locHistory, location)
+        }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    fun deleteOldHistory(locHistory: JSONArray, user: ParseUser) : JSONArray {
         Log.i(TAG, "Checking old history")
+
         // Retrieve current date
         val currDate = Calendar.getInstance().time
-        val user = ParseUser.getCurrentUser()
-        var locHistory = user.getJSONArray(KEY_LOCATION_HISTORY) as JSONArray
         // Read the date visited
         val formatter: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         val strDate = (locHistory.get(0) as JSONObject).getJSONObject("date").getString("iso")
@@ -79,18 +106,50 @@ class ParseRepository {
             Log.i(TAG, "Location removed from history")
             locHistory.remove(0)
             if (locHistory.length() > 0) {
+                // Get the next oldest element in history
                 val strDate = (locHistory.get(0) as JSONObject).getJSONObject("date").getString("iso")
                 date = formatter.parse(strDate) as Date
             }
         }
         user.put(KEY_LOCATION_HISTORY, locHistory)
         user.saveInBackground()
+        // Return resulting array
+        return locHistory
+    }
+
+    private fun deleteOldVisitorHistory(visitorHistory: JSONArray, location: Location) : JSONArray {
+        Log.i(TAG, "Checking old history")
+
+        // Retrieve current date
+        val currDate = Calendar.getInstance().time
+        // Read the date visited
+        val formatter: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        val strDate = (visitorHistory.get(0) as JSONObject).getJSONObject("date").getString("iso")
+        var date = formatter.parse(strDate) as Date
+        // Get rid of history greater than TIME_LIMIT days ago
+        while (visitorHistory.length() > 0 && Math.abs(TimeUnit.DAYS.convert(currDate.time  - date.time, TimeUnit.MILLISECONDS)) > TIME_LIMIT) {
+            Log.i(TAG, "Location removed from history")
+            visitorHistory.remove(0)
+            if (visitorHistory.length() > 0) {
+                // Get the next oldest element in history
+                val strDate = (visitorHistory.get(0) as JSONObject).getJSONObject("date").getString("iso")
+                date = formatter.parse(strDate) as Date
+            }
+        }
+        // Put newly updated list
+        location.put(Location.KEY_VISITORS, visitorHistory)
+        location.saveInBackground()
+        // Return resulting array
+        return visitorHistory
     }
 
     companion object {
         private const val TAG = "ParseRepository"
         const val KEY_NUM_REVIEWS = "numReviews"
         const val KEY_LOCATION_HISTORY = "locationHistory"
-        const val TIME_LIMIT = 0
+        const val KEY_OBJECT_ID = "objectId"
+        const val TIME_LIMIT = 14
+        const val LOC_HISTORY_LIMIT = 50
+
     }
 }

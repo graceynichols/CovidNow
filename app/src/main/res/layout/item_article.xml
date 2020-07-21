@@ -2,7 +2,11 @@
 <androidx.cardview.widget.CardView
 xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="match_parent"
-android:layout_height="match_parent">
+android:layout_height="wrap_content"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:focusable="true">
+
 
     <RelativeLayout
 
@@ -17,7 +21,7 @@ android:layout_height="match_parent">
         android:layout_alignParentTop="true"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TextView"
+        android:text="@string/textview"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -29,7 +33,7 @@ android:layout_height="match_parent">
         android:layout_alignParentStart="true"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TextView" />
+        android:text="@string/textview" />
 
     <TextView
         android:id="@+id/tvDate"
@@ -39,7 +43,7 @@ android:layout_height="match_parent">
         android:layout_alignParentStart="true"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TextView"
+        android:text="@string/textview"
         android:textSize="12sp" />
 
 

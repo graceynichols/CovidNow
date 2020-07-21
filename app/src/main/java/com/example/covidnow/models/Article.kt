@@ -1,6 +1,8 @@
 package com.example.covidnow.models
 
+import android.os.Parcelable
 import android.text.format.DateUtils
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
 import org.parceler.Parcel
@@ -8,7 +10,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Parcel
-class Article() {
+@Parcelize
+class Article() : Parcelable {
     var headline: String? = null
         private set
     var source: String? = null

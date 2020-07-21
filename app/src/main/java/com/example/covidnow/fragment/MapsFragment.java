@@ -64,6 +64,7 @@ import okhttp3.Headers;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+import static android.view.View.VISIBLE;
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 @RuntimePermissions
@@ -138,6 +139,7 @@ public class MapsFragment extends Fragment {
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
         adapter = new PlacesAdapter(fragment, adapterPlaces);
+        rvPlaces.setAdapter(adapter);
 
 
         SupportMapFragment mapFragment =
@@ -152,12 +154,12 @@ public class MapsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String search = etSearch.getText().toString();
+                // Put keyboard away automatically
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
-                    rvPlaces.setAdapter(adapter);
                     // Locate nearby places
                     if (coordinates == null) {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
@@ -177,7 +179,7 @@ public class MapsFragment extends Fragment {
                     mViewModel.getNearbyPlacesJson().observe(getViewLifecycleOwner(), placesJSONObserver);
 
                     // Make recyclerview visible at the bottom
-                    rvPlaces.setVisibility(View.VISIBLE);
+                    rvPlaces.setVisibility(VISIBLE);
                     // Initialize recyclerview
 
                     LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -282,10 +284,10 @@ public class MapsFragment extends Fragment {
         builder.addLocationRequest(mLocationRequest);
         LocationSettingsRequest locationSettingsRequest = builder.build();
 
-        SettingsClient settingsClient = LocationServices.getSettingsClient(Objects.requireNonNull(getContext()));
+        SettingsClient settingsClient = LocationServices.getSettingsClient(requireContext());
         settingsClient.checkLocationSettings(locationSettingsRequest);
         //noinspection MissingPermission
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling

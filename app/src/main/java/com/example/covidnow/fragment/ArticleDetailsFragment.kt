@@ -47,17 +47,6 @@ class ArticleDetailsFragment : Fragment() {
         tvDate?.text = article?.date
         tvSummary?.text = article?.summary
 
-        // Handle back button pressed event
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true /* enabled by default */) {
-            override fun handleOnBackPressed() {
-                // Handle the back button event
-                val newFrag: Fragment = HomeFragment()
-                fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
-                        newFrag)?.commit()
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
-
         // Add image if there is one
         if (article?.imageUrl != null) {
             ivImage.visibility = View.VISIBLE

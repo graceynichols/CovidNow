@@ -119,16 +119,6 @@ public class ComposeReviewFragment extends Fragment {
                 goDetailsActivity();
             }
         });
-
-        // Handle back button pressed event
-        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
-            @Override
-            public void handleOnBackPressed() {
-                // Handle the back button event
-                goDetailsActivity();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     private void goDetailsActivity() {

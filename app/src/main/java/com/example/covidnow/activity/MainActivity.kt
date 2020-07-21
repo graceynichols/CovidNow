@@ -45,8 +45,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val TAG = "MainActivity"
         private val lastPage: MenuItem? = null
-        private var mapsFragment: MapsFragment? = null
-        private var homeFragment: HomeFragment? = null
+        var mapsFragment: MapsFragment? = null
+        var homeFragment: HomeFragment? = null
         private var ft: FragmentTransaction? = null
         fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager, navController: NavController, mapsFrag: MapsFragment?, homeFrag: HomeFragment?) {
             bottomNavigationView?.setOnNavigationItemSelectedListener { menuItem ->

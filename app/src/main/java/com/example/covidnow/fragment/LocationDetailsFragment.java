@@ -101,20 +101,9 @@ public class LocationDetailsFragment extends Fragment {
                 newFrag.setArguments(result);
                 // Start compose review fragment
                 getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                        newFrag).commit();
+                        newFrag).addToBackStack("LocationDetailsFragment").commit();
             }
         });
 
-        // Handle back button pressed event
-        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
-            @Override
-            public void handleOnBackPressed() {
-                // Handle the back button event
-                Fragment newFrag = new MapsFragment();
-                getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                        newFrag).commit();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 }

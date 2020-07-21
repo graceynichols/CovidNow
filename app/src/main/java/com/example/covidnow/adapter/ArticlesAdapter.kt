@@ -38,7 +38,7 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
                 newFrag.arguments = result
                 //fragment.findNavController().navigate(R.id.action_global_articleDetailsFragment, result)
                 fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
-                       newFrag)?.commit()
+                       newFrag)?.addToBackStack("HomeFragment")?.commit()
             }
         }
 

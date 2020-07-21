@@ -36,12 +36,14 @@ class LoginActivity : AppCompatActivity() {
             val loginCallback: LogInCallback? = LogInCallback { user, e ->
                 if (e != null) {
                     Log.e(TAG, "Issue with login", e)
+                    binding?.pbLoading?.visibility = View.GONE
                 } else {
+                    binding?.pbLoading?.visibility = View.GONE
                     goMainActivity()
                 }
             }
             mViewModel?.loginUser(username, password, loginCallback)
-            binding?.pbLoading?.visibility = View.GONE
+
         }
         // On click listener for sign up button
         binding?.btnSignup?.setOnClickListener(View.OnClickListener {

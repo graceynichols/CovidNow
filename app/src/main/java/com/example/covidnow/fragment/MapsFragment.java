@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codepath.asynchttpclient.AsyncHttpClient;
@@ -74,6 +75,7 @@ public class MapsFragment extends Fragment {
     private MapsFragment fragment = this;
     private EditText etSearch;
     private ImageButton btnSearch;
+    private ProgressBar pbLoading;
     private RecyclerView rvPlaces;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
@@ -135,6 +137,7 @@ public class MapsFragment extends Fragment {
         etSearch = view.findViewById(R.id.etSearch);
         btnSearch = view.findViewById(R.id.btnSearch);
         rvPlaces = view.findViewById(R.id.rvPlaces);
+        pbLoading = view.findViewById(R.id.pbLoading);
 
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
@@ -153,6 +156,7 @@ public class MapsFragment extends Fragment {
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                pbLoading.setVisibility(VISIBLE);
                 String search = etSearch.getText().toString();
                 // Put keyboard away automatically
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
@@ -178,8 +182,6 @@ public class MapsFragment extends Fragment {
                     };
                     mViewModel.getNearbyPlacesJson().observe(getViewLifecycleOwner(), placesJSONObserver);
 
-                    // Make recyclerview visible at the bottom
-                    rvPlaces.setVisibility(VISIBLE);
                     // Initialize recyclerview
 
                     LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -196,6 +198,9 @@ public class MapsFragment extends Fragment {
                             // List of places ready to be given to recyclerview
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
+                            // Make recyclerview visible at the bottom
+                            rvPlaces.setVisibility(VISIBLE);
+                            pbLoading.setVisibility(View.GONE);
                         }
                     };
                     mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);

@@ -9,8 +9,11 @@ import androidx.lifecycle.MutableLiveData
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Article.Companion.fromJson
+import com.example.covidnow.models.Location
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.NewsRepository
+import com.example.covidnow.repository.ParseRepository
+import com.parse.SaveCallback
 import okhttp3.Headers
 import org.json.JSONArray
 import org.json.JSONException
@@ -22,6 +25,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var allArticles: MutableLiveData<List<Article>>? = null
     private var jsonLocation: MutableLiveData<JSONObject>? = null
     private val newsRepository: NewsRepository = NewsRepository()
+    private val parseRepository: ParseRepository = ParseRepository()
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
     fun getAddress(apiKey: String?, newCoords: Pair<Double?, Double?>) {
         // Retrieve location JSON from GeocodingRepo
@@ -42,6 +46,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun addToHistory(newLocation: JSONObject, saveCallback: SaveCallback) {
+        Log.i(TAG, "New Location: $newLocation")
+        parseRepository.addToUserHistory((newLocation.getJSONArray("results")[0] as JSONObject).getString("place_id"), saveCallback)
+        // Make sure older location history is deleted
+        parseRepository.deleteOldHistory()
     }
 
     fun getCovidNews(newLocation: JSONObject, apiKey: String?) {

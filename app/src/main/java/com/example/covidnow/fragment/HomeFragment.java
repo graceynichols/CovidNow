@@ -37,6 +37,8 @@ import com.example.covidnow.viewmodels.HomeViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.parse.ParseException;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -110,6 +112,13 @@ public class HomeFragment extends Fragment {
         final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
             @Override
             public void onChanged(@Nullable final JSONObject newLocation) {
+                // Location ready to be saved to history
+                mViewModel.addToHistory(newLocation, new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        Log.i(TAG, "User saved");
+                    }
+                });
                 // Location is ready to be passed to news api
                 mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
             }

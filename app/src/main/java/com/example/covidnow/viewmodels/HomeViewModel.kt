@@ -51,16 +51,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addLocationToUserHistory(newLocation: JSONObject, saveCallback: SaveCallback) {
+        // Add user's current location to their history
         Log.i(TAG, "New Location: $newLocation")
         val finalLocation = newLocation.getJSONArray("results")[0] as JSONObject
         val placeId = (finalLocation).getString("place_id")
-        parseRepository.addToUserHistory(placeId, saveCallback)
+        // Make API call to update user in Parse
+        var locHistory = parseRepository.addToUserHistory(placeId, saveCallback)
         // Make sure older location history is deleted
         val user = ParseUser.getCurrentUser()
-        var locHistory = user.getJSONArray(ParseRepository.KEY_LOCATION_HISTORY) as JSONArray
         // Only check if we need to delete if there's too much history
         if (locHistory.length() > USER_HISTORY_LIMIT) {
-            parseRepository.deleteOldHistory(locHistory, user)
+            parseRepository.deleteOldUserHistory(locHistory, user)
         }
         // Now add this user to that location's visitors
         parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
@@ -101,10 +102,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         // Query case count from news repo
         stateInfo.first?.let {
             apiKey?.let { it1 ->
+                // Make call to news API
                 newsRepository.queryCaseCount(it, it1, object : JsonHttpResponseHandler() {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     Log.i(TAG, "News Response: $json")
                     try {
+                        // Format the state/province + case count string
                         val cases = stateInfo.second.toString() + " Case Count: " +
                                 json.jsonObject.getJSONObject("stats")
                                         .getString("totalConfirmedCases")
@@ -126,9 +129,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         // Query news from news Repo
         apiKey?.let {
             stateInfo.first?.let { it1 ->
+                // Make call to news API
                 newsRepository.queryNews(it, it1, object : JsonHttpResponseHandler() {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     try {
+                        // Retrieve news JSONArray
                         val news = json.jsonObject.getJSONArray("news")
                         Log.i(TAG, "News: $news")
                         addNews(news)
@@ -148,6 +153,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     @Throws(JSONException::class)
     private fun addNews(news: JSONArray) {
+        // Format news into ArrayList
         val articles: MutableList<Article> = ArrayList()
         for (i in 0 until news.length()) {
             // Add each article as an Article object to articles
@@ -180,12 +186,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     @Throws(JSONException::class)
     fun locationToISO(location: JSONObject): Pair<String?, String?> {
+        // Convert geocoding response to ISO code (country-state/province)
         val types = "types"
+        // The abbreviation for country, state, or province
         val shortName = "short_name"
-        var iso = ""
         var country = ""
         var region = ""
+        // State or province name
         var stateName = ""
+        // Retrieve this location's formatted address
         val components = (location.getJSONArray("results")[0] as JSONObject).getJSONArray("address_components")
         for (i in 0 until components.length()) {
             // Search through components for state/province and country
@@ -193,6 +202,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             Log.i(TAG, element.toString())
             if (element.has(types)) {
                 if (element.getJSONArray(types)[0] == "country") {
+                    // This is the location's country
                     Log.i(TAG, element.getString(shortName))
                     // Add country to ISO
                     country = element.getString(shortName)
@@ -204,7 +214,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
-        iso = "$country-$region"
+        // Build ISO code (ex: US-CA)
+        val iso = "$country-$region"
         Log.i(TAG, "ISO code: $iso")
         return Pair<String?, String?>(iso, stateName)
     }

@@ -30,10 +30,12 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
             newCoords.first?.let { it1 ->
                 newCoords.second?.let { it2 ->
                     apiKey?.let { it3 ->
+                        // Query places API for nearby places matching this query
                         placesRepository.findAPlace(it, it1, it2, it3, object : JsonHttpResponseHandler() {
                             override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                                 try {
                                     Log.i(TAG, "Places API Response: $json")
+                                    // Retrieve the places array from the API response
                                     val array = json.jsonObject.getJSONArray("results")
                                     nearbyPlacesJson?.postValue(array)
                                 } catch (e: JSONException) {
@@ -58,8 +60,10 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
             val finalPlaces: MutableList<Location> = ArrayList()
             for (i in 0 until jArray.length()) {
                 val newLocation = jArray[i] as JSONObject
+                // Retrieve location's unique placeId
                 val placeId = newLocation.getString("place_id")
-                parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
+                // Search parse for a location matching this placeID
+                parseRepository.searchPlace(placeId, GetCallback { `object`, _ ->
                     if (`object` == null) {
                         // no location saved, must create new one
                         try {

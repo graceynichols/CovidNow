@@ -29,13 +29,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun contactTracing() {
         val user = ParseUser.getCurrentUser()
-        val locHistory = user.get("locationHistory") as JSONArray
-        // Delete irrelevant/older location history
-        val finalHistory = parseRepository.deleteOldHistory(locHistory, user)
+        val locHistory = user.getJSONArray("locationHistory") as JSONArray
+        // Delete irrelevant/older location history for this user
+        val finalHistory = parseRepository.deleteOldUserHistory(locHistory, user)
         // For each location in history
         for (x in 0 until finalHistory.length()) {
             // Get this location's place ID
-            var placeId = (finalHistory.get(x) as JSONObject).getString(Location.KEY_PLACE_ID)
+            val placeId = (finalHistory.get(x) as JSONObject).getString(Location.KEY_PLACE_ID)
+            val userDate = parseRepository.jsonObjectToDate(finalHistory.get(x) as JSONObject)
             // Query parse for this location
             parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
                 if (`object` == null) {
@@ -43,7 +44,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     Log.i(TAG, "Location in history not previously saved")
                 } else {
                     // The location was saved in parse
-                    notifyAllVisitors(`object`)
+                    findAllExposed(`object`, user.objectId, userDate)
                 }
             })
 
@@ -51,7 +52,28 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     }
 
-    private fun notifyAllVisitors(location: Location?) {
+    private fun findAllExposed(location: Location, currentUser: String, userDate: Date) {
+        Log.i(TAG, "Finding all exposed at: " + location.placeId)
+        if (location.visitors != null) {
+            // Remove any visitors who came > TIME_LIMIT days ago
+            val visitorHistory = parseRepository.deleteOldVisitorHistory(location.visitors as JSONArray, location)
+            for (i in 0 until visitorHistory.length()) {
+                val objectId: String = (visitorHistory.get(i) as JSONObject).getString(ParseRepository.KEY_OBJECT_ID)
+                // Make sure this isn't just the current user
+                if (!objectId.equals(currentUser)) {
+                    // Find if exposed user and this visitor were there on the same day
+                    if (parseRepository.differenceInDays(userDate, (parseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject))) == 0) {
+                        Log.i(TAG, "User exposed visitor $objectId")
+                        parseRepository.markAsExposed(objectId)
+                    }
+                }
+
+            }
+        } else {
+            // No visitor history saved
+            location.visitors = JSONArray()
+        }
+
 
     }
 }

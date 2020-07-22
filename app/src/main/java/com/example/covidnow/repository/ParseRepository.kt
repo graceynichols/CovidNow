@@ -182,8 +182,23 @@ class ParseRepository {
 
     private fun addMessage(user: ParseUser, location: Location, onDate: Date) {
         // Add this location and date as a "message" to their messages
-        val messagesObject: Messages = user.get(KEY_MESSAGES) as Messages
-        var messagesHistory: JSONArray = messagesObject.history as JSONArray
+        val messagesObject: Messages = user.getParseObject(KEY_MESSAGES)?.fetchIfNeeded() as Messages
+        val messagesHistory: JSONArray = messagesObject.history as JSONArray
+
+        // Check if they've already been notified for this place and day
+        if (messagesHistory.length() > 0) {
+            // Find the most recent date they got a message
+            val mostRecentHistory = messagesHistory.get(0) as JSONObject
+            if (mostRecentHistory.getString(Location.KEY_PLACE_ID).equals(location.placeId)) {
+                // Find most recent element's date
+                val mostRecentDate: Date = jsonObjectToDate((mostRecentHistory))
+                if (differenceInDays(onDate, mostRecentDate) == 0) {
+                    // It was the same day, don't notify them
+                    return
+                }
+            }
+        }
+
         val newMessage = JSONObject()
         // Create new message with place ID and date
         newMessage.put(Location.KEY_PLACE_ID, location.placeId)

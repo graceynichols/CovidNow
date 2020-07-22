@@ -2,6 +2,7 @@ package com.example.covidnow
 
 import android.app.Application
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.parse.Parse
 import com.parse.ParseObject
 import okhttp3.OkHttpClient

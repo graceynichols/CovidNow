@@ -21,6 +21,7 @@ class ProfileFragment : Fragment() {
     private var tvUsername: TextView? = null
     private var tvReviewCount: TextView? = null
     private var btnLogout: Button? = null
+    private var btnCovid: Button? = null
     private var mViewModel: ProfileViewModel? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -34,11 +35,14 @@ class ProfileFragment : Fragment() {
         tvUsername = view.findViewById(R.id.tvUsername)
         tvReviewCount = view.findViewById(R.id.tvReviewCount)
         btnLogout = view.findViewById(R.id.btnLogout)
+        btnCovid = view.findViewById(R.id.btnCovid)
 
         // Set information
         val reviews = "" + mViewModel?.getNumReviews(ParseUser.getCurrentUser())
         tvReviewCount?.text = reviews
         tvUsername?.text = ParseUser.getCurrentUser().username
+
+        // Listen for logout button
         btnLogout?.setOnClickListener(View.OnClickListener { view ->
             val myOnClickListener = View.OnClickListener {
                 // Logout user
@@ -57,8 +61,22 @@ class ProfileFragment : Fragment() {
             // Make the snackbar
             Snackbar.make(view, "Are you sure you want to logout?", Snackbar.LENGTH_LONG)
                     .setAction("Yes", myOnClickListener)
-                    .show() // Don’t forget to show!*/
+                    .show()
         })
+
+        // If someone hits the "I have COVID-19" button
+        btnCovid?.setOnClickListener(View.OnClickListener { view ->
+            val myOnClickListener = View.OnClickListener {
+                // Trace people who overlapped with this person's location history
+                mViewModel?.contactTracing()
+                Toast.makeText(context, "People you may have had contact with have been notified", Toast.LENGTH_SHORT).show()
+            }
+            // Snackbar - user must confirm they have covid before contact tracing begins
+            Snackbar.make(view, "Are you sure you are positive for COVID-19?", Snackbar.LENGTH_LONG)
+                    .setAction("Yes", myOnClickListener)
+                    .show()
+        })
+
     }
 
     companion object {

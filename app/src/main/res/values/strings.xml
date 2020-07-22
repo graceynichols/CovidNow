@@ -15,5 +15,7 @@
     <string name="logout">Logout</string>
     <string name="email">Email</string>
     <string name="picture_url">pictureUrl</string>
+    <string name="i_have_covid_19">I have COVID-19</string>
     <string name="textview">TextView</string>
+
 </resources>

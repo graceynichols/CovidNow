@@ -3,6 +3,7 @@ package com.example.covidnow.models
 import com.parse.ParseClassName
 import com.parse.ParseFile
 import com.parse.ParseObject
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.parceler.Parcel
@@ -69,6 +70,14 @@ class Location : ParseObject() {
             put(KEY_LONGITUDE, newLng)
         }
 
+    var visitors: JSONArray?
+        get() = getJSONArray(KEY_VISITORS)
+        set(newVisitors) {
+            if (newVisitors != null) {
+                put(KEY_VISITORS, newVisitors)
+            }
+        }
+
     companion object {
         private const val TAG = "Location"
         const val KEY_ADDRESS = "address"
@@ -79,6 +88,7 @@ class Location : ParseObject() {
         const val KEY_PLACE_ID = "place_id"
         const val KEY_LATITUDE = "latitude"
         const val KEY_LONGITUDE = "longitude"
+        const val KEY_VISITORS = "visitors"
 
         @JvmStatic
         @Throws(JSONException::class)
@@ -89,6 +99,23 @@ class Location : ParseObject() {
             // If it's not saved it must not be marked as a hotspot
             location.isHotspot = false
             location.name = json.getString("name")
+            location.placeId = json.getString("place_id")
+            // Save latitude and longitude
+            location.latitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lat")
+            location.longitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lng")
+            return location
+        }
+
+        @JvmStatic
+        @Throws(JSONException::class)
+        fun fromGeocodingJson(json: JSONObject): Location {
+            val location = Location()
+            // Find the formatted address
+            location.address = json.getString("formatted_address")
+            // If it's not saved it must not be marked as a hotspot
+            location.isHotspot = false
+            // This place presumably doesn't have a name
+            location.name = location.address
             location.placeId = json.getString("place_id")
             // Save latitude and longitude
             location.latitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lat")

@@ -34,10 +34,14 @@ import com.example.covidnow.adapter.ArticlesAdapter;
 import com.example.covidnow.R;
 import com.example.covidnow.repository.GeocodingRepository;
 import com.example.covidnow.repository.NewsRepository;
+import com.example.covidnow.repository.ParseRepository;
 import com.example.covidnow.viewmodels.HomeViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -112,10 +116,21 @@ public class HomeFragment extends Fragment {
         Log.i(TAG, "Getting current location");
         HomeFragmentPermissionsDispatcher.getMyLocationWithPermissionCheck(this);
 
+        // Make sure user has a messages object
+        if (ParseUser.getCurrentUser().get(ParseRepository.KEY_MESSAGES) == null) {
+            mViewModel.giveUserMessages(ParseUser.getCurrentUser());
+        }
         // Listen for response from geocoding API to give to news API
         final Observer<JSONObject> locObserver = new Observer<JSONObject>() {
             @Override
             public void onChanged(@Nullable final JSONObject newLocation) {
+                // Location ready to be saved to history
+                mViewModel.addLocationToUserHistory(newLocation, new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        Log.i(TAG, "User saved");
+                    }
+                });
                 // Location is ready to be passed to news api
                 mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
             }

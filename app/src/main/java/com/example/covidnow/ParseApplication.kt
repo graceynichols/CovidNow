@@ -2,6 +2,7 @@ package com.example.covidnow
 
 import android.app.Application
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.parse.Parse
 import com.parse.ParseObject
 import okhttp3.OkHttpClient
@@ -26,6 +27,7 @@ class ParseApplication : Application() {
 
         // Register parse models
         ParseObject.registerSubclass(Location::class.java)
+        ParseObject.registerSubclass(Messages::class.java)
 
 
         // set applicationId, and server server based on the values in the Heroku settings.

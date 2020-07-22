@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,28 +18,42 @@
         android:id="@+id/tvReview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvUsername"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="60dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="18dp"
+        android:layout_toEndOf="@+id/tvUsername"
+
         android:text="@string/reviews" />
 
     <TextView
         android:id="@+id/tvReviewCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvUsername"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="60dp"
+        android:layout_alignTop="@+id/tvReview"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="0dp"
         android:layout_toEndOf="@+id/tvReview"
         tools:text="numReviews" />
 
     <Button
         android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvReview"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="100dp"
-        android:text="@string/logout" />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        android:layout_marginTop="40dp"
+        android:backgroundTint="@android:color/holo_blue_dark"
+        android:text="@string/logout"
+        android:textColor="@color/design_default_color_background" />
+
+    <Button
+        android:id="@+id/btnCovid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnLogout"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/design_default_color_error"
+        android:text="@string/i_have_covid_19"
+        android:textColor="@color/design_default_color_on_primary" />
+</RelativeLayout>

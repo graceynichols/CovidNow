@@ -22,6 +22,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="18dp"
         android:layout_toEndOf="@+id/tvUsername"
+
         android:text="@string/reviews" />
 
     <TextView

@@ -41,7 +41,7 @@ class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Locat
                 val newFrag: Fragment = LocationDetailsFragment()
                 newFrag.arguments = result
                 fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
-                        newFrag)?.commit()
+                        newFrag)?.addToBackStack("MapsFragment")?.commit()
             }
         }
     }

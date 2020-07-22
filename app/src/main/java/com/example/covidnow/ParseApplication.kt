@@ -26,6 +26,7 @@ class ParseApplication : Application() {
 
         // Register parse models
         ParseObject.registerSubclass(Location::class.java)
+        ParseObject.registerSubclass(Messages::class.java)
 
 
         // set applicationId, and server server based on the values in the Heroku settings.

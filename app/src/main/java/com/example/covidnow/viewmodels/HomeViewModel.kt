@@ -220,6 +220,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         return Pair<String?, String?>(iso, stateName)
     }
 
+    fun giveUserMessages(currentUser: ParseUser) {
+        parseRepository.giveUserMessagesObject(currentUser)
+    }
+
     companion object {
         private const val TAG = "HomeViewModel"
         const val USER_HISTORY_LIMIT = 50

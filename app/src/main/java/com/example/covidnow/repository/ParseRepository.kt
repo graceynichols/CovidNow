@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import com.example.covidnow.fragment.HomeFragment
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.example.covidnow.viewmodels.HomeViewModel
 import com.parse.*
 import org.json.JSONArray
@@ -41,7 +42,7 @@ class ParseRepository {
         }
     }
 
-    fun markAsExposed(objectId: String) {
+    fun markAsExposed(objectId: String, location: Location, onDate: Date) {
         // Mark user "objectId" as exposed to COVID
         val query = ParseQuery.getQuery<ParseUser>("_User")
         // Only get user with this objectId
@@ -53,11 +54,9 @@ class ParseRepository {
                 // User not previously saved, this shouldn't happen
                 Log.i(TAG, "User not previously saved")
             } else {
-                // The location was saved in parse
+                // User was found in Parse
                 Log.i(TAG, "User " +  `object`.username + " found in parse, marking as exposed")
-                // Set their "wasExposed" to true
-                `object`.put(KEY_WAS_EXPOSED, true)
-                `object`.save()
+                addMessage(`object`, location, onDate)
             }
         })
     }
@@ -69,7 +68,7 @@ class ParseRepository {
         user.setPassword(password)
         user.email = email
         user.put(KEY_NUM_REVIEWS, 0)
-        user.put(KEY_WAS_EXPOSED, false)
+        user.put(KEY_MESSAGES, Messages.createMessages())
         user.put(KEY_LOCATION_HISTORY, JSONArray())
         // Invoke signUpInBackground
         user.signUpInBackground(signUpCallback)
@@ -181,12 +180,31 @@ class ParseRepository {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
     }
 
+    private fun addMessage(user: ParseUser, location: Location, onDate: Date) {
+        // Add this location and date as a "message" to their messages
+        val messagesObject: Messages = user.get(KEY_MESSAGES) as Messages
+        var messagesHistory: JSONArray = messagesObject.history as JSONArray
+        val newMessage = JSONObject()
+        // Create new message with place ID and date
+        newMessage.put(Location.KEY_PLACE_ID, location.placeId)
+        newMessage.put(KEY_DATE, onDate)
+        // Add to messages object's array
+        messagesObject.history = messagesHistory.put(0, newMessage)
+        messagesObject.saveInBackground { Log.i(TAG, "Message saved") }
+    }
+
+    fun giveUserMessagesObject(currentUser: ParseUser) {
+        // Give them an empty messages object
+        currentUser.put(KEY_MESSAGES, Messages.createMessages())
+    }
+
     companion object {
         private const val TAG = "ParseRepository"
         const val KEY_NUM_REVIEWS = "numReviews"
         const val KEY_LOCATION_HISTORY = "locationHistory"
+        const val KEY_MESSAGES = "exposureHistory"
+        const val KEY_DATE = "date"
         const val KEY_OBJECT_ID = "objectId"
-        const val KEY_WAS_EXPOSED = "wasExposed"
         const val TIME_LIMIT = 14
         const val LOC_HISTORY_LIMIT = 50
 

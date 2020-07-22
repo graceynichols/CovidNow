@@ -64,7 +64,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     // Find if exposed user and this visitor were there on the same day
                     if (parseRepository.differenceInDays(userDate, (parseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject))) == 0) {
                         Log.i(TAG, "User exposed visitor $objectId")
-                        parseRepository.markAsExposed(objectId)
+                        parseRepository.markAsExposed(objectId, location, userDate)
                     }
                 }
 

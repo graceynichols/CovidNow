@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private var bottomNavigationView: BottomNavigationView? = null
     private var homeFragment: HomeFragment? = null
     private var mapsFragment: MapsFragment? = null
+    private var profileFragment: ProfileFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +32,12 @@ class MainActivity : AppCompatActivity() {
             // Create new fragments, otherwise use saved ones
             homeFragment = HomeFragment()
             mapsFragment = MapsFragment()
+            profileFragment = ProfileFragment()
         }
         // Setup bottom nav bar
         bottomNavigationView = findViewById(R.id.bottomNavigation)
         bottomNavigationView?.setupWithNavController(this.findNavController(R.id.nav_host_fragment))
-        initializeBottomNavigationView(bottomNavigationView, this.fragmentManager, this.findNavController(R.id.nav_host_fragment), mapsFragment, homeFragment)
+        initializeBottomNavigationView(bottomNavigationView, this.fragmentManager, this.profileFragment, mapsFragment, homeFragment)
         bottomNavigationView?.selectedItemId = R.id.action_home
 
     }
@@ -44,14 +46,15 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "MainActivity"
-        private val lastPage: MenuItem? = null
-        var mapsFragment: MapsFragment? = null
-        var homeFragment: HomeFragment? = null
+        private var mapsFragment: MapsFragment? = null
+        private var homeFragment: HomeFragment? = null
+        private var profileFragment: ProfileFragment? = null
         private var ft: FragmentTransaction? = null
-        fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager, navController: NavController, mapsFrag: MapsFragment?, homeFrag: HomeFragment?) {
+        fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager, profFrag: ProfileFragment?, mapsFrag: MapsFragment?, homeFrag: HomeFragment?) {
             bottomNavigationView?.setOnNavigationItemSelectedListener { menuItem ->
                 mapsFragment = mapsFrag
                 homeFragment = homeFrag
+                profileFragment = profFrag
                 ft = fManager.beginTransaction()
                 when (menuItem.itemId) {
                     R.id.action_profile -> displayProfile()
@@ -64,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        fun displayMaps() {
+        private fun displayMaps() {
             if (mapsFragment?.isAdded == true) {
                 // Maps already in container
                 ft?.show(mapsFragment as MapsFragment)
@@ -73,6 +76,9 @@ class MainActivity : AppCompatActivity() {
             }
             if (homeFragment?.isAdded == true) {
                 ft?.hide(homeFragment as HomeFragment)
+            }
+            if (profileFragment?.isAdded == true) {
+                ft?.hide(profileFragment as ProfileFragment)
             }
             ft?.commit()
         }
@@ -87,17 +93,28 @@ class MainActivity : AppCompatActivity() {
             if (mapsFragment?.isAdded == true) {
                 ft?.hide(mapsFragment as MapsFragment)
             }
+            if (profileFragment?.isAdded == true) {
+                ft?.hide(profileFragment as ProfileFragment)
+            }
             ft?.commit()
         }
 
         private fun displayProfile() {
+            if (profileFragment?.isAdded == true) {
+                // Profile already in container
+                ft?.show(profileFragment as ProfileFragment)
+            } else{
+                // Add profile to container
+                (ft as FragmentTransaction).add(R.id.flContainer, profileFragment as ProfileFragment)
+            }
+            // Hide any other fragments already added
             if (mapsFragment?.isAdded == true) {
                 ft?.hide(mapsFragment as MapsFragment)
             }
             if (homeFragment?.isAdded == true) {
                 ft?.hide(homeFragment as HomeFragment)
             }
-            ft?.replace(R.id.flContainer, ProfileFragment())?.commit()
+            ft?.commit()
 
         }
     }

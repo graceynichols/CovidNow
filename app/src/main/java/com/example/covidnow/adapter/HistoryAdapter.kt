@@ -41,9 +41,9 @@ internal class HistoryAdapter(private val fragment: Fragment, private val exposu
                 }
             })
 
-            //tvDate.text = ParseRepository.jsonObjectToDate(element).toString()
+            tvDate.text = getRelativeTimeAgo(ParseRepository.jsonObjectToDate(element))
             // TODO make this a better formatted date
-            tvDate.text = element.getJSONObject("date").getString("iso")
+            //tvDate.text = getRelativeTimeAgo(element.getJSONObject("date").getString("iso"))
         }
 
 

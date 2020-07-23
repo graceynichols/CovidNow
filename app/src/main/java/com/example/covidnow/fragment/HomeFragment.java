@@ -185,7 +185,8 @@ public class HomeFragment extends Fragment {
                         if (location != null) {
                             Log.i(TAG, "Google Maps Coordinates: " + location.toString());
                             // Retrieve news data from HomeViewModel
-                            mViewModel.getAddress(getString(R.string.google_maps_key), Pair.create(location.getLatitude(), location.getLongitude()));
+                            // TODO uncomment this if I need to make news API calls
+                            //mViewModel.getAddress(getString(R.string.google_maps_key), Pair.create(location.getLatitude(), location.getLongitude()));
                         }
                     }
                 })

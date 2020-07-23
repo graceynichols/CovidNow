@@ -21,12 +21,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codepath.asynchttpclient.AsyncHttpClient;
@@ -68,7 +65,6 @@ import okhttp3.Headers;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
-import static android.view.View.VISIBLE;
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 @RuntimePermissions
@@ -79,7 +75,6 @@ public class MapsFragment extends Fragment {
     private EditText etSearch;
     private ImageButton btnSearch;
     private CardView card;
-    private ProgressBar pbLoading;
     private RecyclerView rvPlaces;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
@@ -141,20 +136,11 @@ public class MapsFragment extends Fragment {
         etSearch = view.findViewById(R.id.etSearch);
         btnSearch = view.findViewById(R.id.btnSearch);
         rvPlaces = view.findViewById(R.id.rvPlaces);
-        pbLoading = view.findViewById(R.id.pbLoading);
         card = view.findViewById(R.id.card);
 
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
         adapter = new PlacesAdapter(fragment, adapterPlaces);
-        rvPlaces.setAdapter(adapter);
-
-        // Initialize recyclerview
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        rvPlaces.setLayoutManager(layoutManager);
-        // Add lines between recycler view
-        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
-        rvPlaces.addItemDecoration(itemDecoration);
 
 
         SupportMapFragment mapFragment =
@@ -168,14 +154,13 @@ public class MapsFragment extends Fragment {
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pbLoading.setVisibility(VISIBLE);
                 String search = etSearch.getText().toString();
-                // Put keyboard away automatically
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
+                    rvPlaces.setAdapter(adapter);
                     // Locate nearby places
                     if (coordinates == null) {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
@@ -194,6 +179,16 @@ public class MapsFragment extends Fragment {
                     };
                     mViewModel.getNearbyPlacesJson().observe(getViewLifecycleOwner(), placesJSONObserver);
 
+                    // Make recyclerview visible at the bottom
+                    card.setVisibility(View.VISIBLE);
+                    // Initialize recyclerview
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+                    rvPlaces.setLayoutManager(layoutManager);
+
+                    // Add lines between recycler view
+                    RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+                    rvPlaces.addItemDecoration(itemDecoration);
+
                     // Listen for List<Location> received from ParseRepo
                     final Observer<List<com.example.covidnow.models.Location>> placesListObserver = new Observer<List<com.example.covidnow.models.Location>>() {
                         @Override
@@ -201,9 +196,6 @@ public class MapsFragment extends Fragment {
                             // List of places ready to be given to recyclerview
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
-                            // Make recyclerview visible at the bottom
-                            card.setVisibility(VISIBLE);
-                            pbLoading.setVisibility(View.GONE);
                         }
                     };
                     mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);

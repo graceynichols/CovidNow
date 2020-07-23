@@ -81,7 +81,7 @@ class ParseRepository {
         if (locHistory != null) {
             if (locHistory.length() > 0) {
                 // Most recent entry is at the end of the list
-                return locHistory.get(locHistory.length()) as JSONObject
+                return locHistory.get(locHistory.length() - 1) as JSONObject
             }
         }
         return null

@@ -11,18 +11,30 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.activity.LoginActivity
+import com.example.covidnow.adapter.HistoryAdapter
+import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.parse.ParseUser
+import org.json.JSONArray
+import org.json.JSONObject
 
 class ProfileFragment : Fragment() {
     private var tvUsername: TextView? = null
     private var tvReviewCount: TextView? = null
+    private var rvHistory: RecyclerView? = null
     private var btnLogout: Button? = null
     private var btnCovid: Button? = null
     private var mViewModel: ProfileViewModel? = null
+    private var adapterHistory: List<JSONObject>?  = null
+    private var adapter: HistoryAdapter?  = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -36,11 +48,29 @@ class ProfileFragment : Fragment() {
         tvReviewCount = view.findViewById(R.id.tvReviewCount)
         btnLogout = view.findViewById(R.id.btnLogout)
         btnCovid = view.findViewById(R.id.btnCovid)
+        rvHistory = view.findViewById(R.id.rvHistory)
 
-        // Set information
+        // Set review number
         val reviews = "" + mViewModel?.getNumReviews(ParseUser.getCurrentUser())
         tvReviewCount?.text = reviews
         tvUsername?.text = ParseUser.getCurrentUser().username
+
+        // Set up location history adapter
+        adapterHistory = ArrayList()
+        adapter = HistoryAdapter(this, adapterHistory as ArrayList<JSONObject>)
+        rvHistory?.adapter = adapter
+
+        // Set recyclerview layoutmanager
+        val layoutManager = LinearLayoutManager(context)
+        rvHistory?.layoutManager = layoutManager
+        // Add lines between recycler view
+        val itemDecoration: ItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        rvHistory?.addItemDecoration(itemDecoration)
+
+        // Get this user's exposure messages
+
+        mViewModel?.getMessages()?.let { adapter?.addAll(it) }
+
 
         // Listen for logout button
         btnLogout?.setOnClickListener(View.OnClickListener { view ->

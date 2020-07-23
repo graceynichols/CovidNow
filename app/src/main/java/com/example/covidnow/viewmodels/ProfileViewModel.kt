@@ -3,12 +3,13 @@ package com.example.covidnow.viewmodels
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.example.covidnow.adapter.HistoryAdapter
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.example.covidnow.repository.ParseRepository
 import com.parse.GetCallback
 import com.parse.ParseUser
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -36,7 +37,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         for (x in 0 until finalHistory.length()) {
             // Get this location's place ID
             val placeId = (finalHistory.get(x) as JSONObject).getString(Location.KEY_PLACE_ID)
-            val userDate = parseRepository.jsonObjectToDate(finalHistory.get(x) as JSONObject)
+            val userDate = ParseRepository.jsonObjectToDate(finalHistory.get(x) as JSONObject)
             // Query parse for this location
             parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
                 if (`object` == null) {
@@ -62,7 +63,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 // Make sure this isn't just the current user
                 if (!objectId.equals(currentUser)) {
                     // Find if exposed user and this visitor were there on the same day
-                    if (parseRepository.differenceInDays(userDate, (parseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject))) == 0) {
+                    if (parseRepository.differenceInDays(userDate, (ParseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject))) == 0) {
                         Log.i(TAG, "User exposed visitor $objectId")
                         parseRepository.markAsExposed(objectId, location, userDate)
                     }
@@ -73,7 +74,18 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             // No visitor history saved
             location.visitors = JSONArray()
         }
+    }
 
+    fun jsonToArray(exposureJson: JSONArray): ArrayList<JSONObject> {
+        val exposureList = ArrayList<JSONObject>()
+        for (i in 0 until exposureJson.length()) {
+            exposureList.add(exposureJson.get(i) as JSONObject)
+        }
+        return exposureList
+    }
 
+    fun getMessages(): ArrayList<JSONObject>? {
+        val userMessages: Messages? = parseRepository.getUserMessages()
+        return userMessages?.getJSONArray(Messages.KEY_HISTORY)?.let { jsonToArray(it) }
     }
 }

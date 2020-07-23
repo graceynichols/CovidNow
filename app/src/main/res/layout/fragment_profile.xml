@@ -41,7 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvReview"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
         android:backgroundTint="@android:color/holo_blue_dark"
         android:text="@string/logout"
         android:textColor="@color/design_default_color_background" />
@@ -56,4 +57,25 @@
         android:backgroundTint="@color/design_default_color_error"
         android:text="@string/i_have_covid_19"
         android:textColor="@color/design_default_color_on_primary" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvHistory"
+        android:layout_width="match_parent"
+        android:layout_height="482dp"
+        android:layout_below="@id/tvExposureHistory"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp" />
+
+    <TextView
+        android:id="@+id/tvExposureHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnCovid"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:text="@string/exposure_history"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
 </RelativeLayout>

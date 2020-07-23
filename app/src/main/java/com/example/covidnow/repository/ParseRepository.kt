@@ -99,7 +99,7 @@ class ParseRepository {
     fun addVisitorToHistory(location: Location) {
         Log.i(TAG, "Adding this visitor to location's history")
         val user = ParseUser.getCurrentUser()
-        var newVisitor = JSONObject()
+        val newVisitor = JSONObject()
         newVisitor.put(KEY_OBJECT_ID, user.objectId)
         // Save date visited (current date)
         newVisitor.put("date", Calendar.getInstance().time)
@@ -108,7 +108,7 @@ class ParseRepository {
             location.visitors = JSONArray()
         }
         // Retrieve this location's visitor history
-        var locHistory: JSONArray? = location.visitors as JSONArray
+        val locHistory: JSONArray? = location.visitors as JSONArray
 
         Log.i(TAG, "New visitor: $newVisitor")
         // Add this visitor to visitors list and save
@@ -170,11 +170,7 @@ class ParseRepository {
         return visitorHistory
     }
 
-    fun jsonObjectToDate(jsonObject: JSONObject): Date {
-        val formatter: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        val strDate = (jsonObject).getJSONObject("date").getString("iso")
-        return formatter.parse(strDate) as Date
-    }
+
 
     fun differenceInDays(currDate: Date, otherDate: Date): Int {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
@@ -213,6 +209,10 @@ class ParseRepository {
         currentUser.put(KEY_MESSAGES, Messages.createMessages())
     }
 
+    fun getUserMessages(): Messages? {
+        return ParseUser.getCurrentUser().getParseObject(KEY_MESSAGES)?.fetchIfNeeded()
+    }
+
     companion object {
         private const val TAG = "ParseRepository"
         const val KEY_NUM_REVIEWS = "numReviews"
@@ -222,6 +222,14 @@ class ParseRepository {
         const val KEY_OBJECT_ID = "objectId"
         const val TIME_LIMIT = 14
         const val LOC_HISTORY_LIMIT = 50
+
+        @JvmStatic
+        fun jsonObjectToDate(jsonObject: JSONObject): Date {
+            val formatter: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            val strDate = (jsonObject).getJSONObject("date").getString("iso")
+            return formatter.parse(strDate) as Date
+        }
+
 
     }
 }

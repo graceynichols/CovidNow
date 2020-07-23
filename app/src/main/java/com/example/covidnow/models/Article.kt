@@ -45,6 +45,7 @@ class Article() : Parcelable {
             return article
         }
 
+        @JvmStatic
         fun getRelativeTimeAgo(stringDate: String): String {
             // Change date to relative time
             val formatter: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")

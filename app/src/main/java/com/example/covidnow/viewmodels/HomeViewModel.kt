@@ -57,14 +57,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val placeId = (finalLocation).getString("place_id")
         // Make API call to update user in Parse
         var locHistory = parseRepository.addToUserHistory(placeId, saveCallback)
-        // Make sure older location history is deleted
         val user = ParseUser.getCurrentUser()
-        // Only check if we need to delete if there's too much history
+        // Only delete older history if there's too much history
         if (locHistory.length() > USER_HISTORY_LIMIT) {
             parseRepository.deleteOldUserHistory(locHistory, user)
         }
         // Now add this user to that location's visitors
-        parseRepository.searchPlace(placeId, GetCallback { `object`, e ->
+        parseRepository.searchPlace(placeId, GetCallback { `object`, _ ->
             var location: Location? = null
             if (`object` == null) {
                 // no location saved, must create new one

@@ -3,7 +3,6 @@ package com.example.covidnow.viewmodels
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import com.example.covidnow.adapter.HistoryAdapter
 import com.example.covidnow.models.Location
 import com.example.covidnow.models.Messages
 import com.example.covidnow.repository.ParseRepository
@@ -15,9 +14,9 @@ import java.util.*
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val parseRepository: ParseRepository = ParseRepository()
-    private val TAG: String = "ProfileViewModel"
 
     fun getNumReviews(user: ParseUser): Int {
+        // Retrieve user's number of views from Parse
         val numReviews = user.getNumber(ParseRepository.KEY_NUM_REVIEWS)
         return numReviews?.toInt() ?: 0
     }
@@ -29,10 +28,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun contactTracing() {
+        // Find people this user might have exposed
         val user = ParseUser.getCurrentUser()
         val locHistory = user.getJSONArray("locationHistory") as JSONArray
-        // Delete irrelevant/older location history for this user
+        // Delete location history past ParseRepository.TIME_LIMIT days ago (14) for this user
         val finalHistory = parseRepository.deleteOldUserHistory(locHistory, user)
+        Log.i(TAG, "Users recent location history: $finalHistory")
         // For each location in history
         for (x in 0 until finalHistory.length()) {
             // Get this location's place ID
@@ -43,8 +44,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 if (`object` == null) {
                     // no location saved, this shouldn't ever happen
                     Log.i(TAG, "Location in history not previously saved")
+                    Log.i(TAG, "Error message $e")
                 } else {
-                    // The location was saved in parse
+                    // Find who was at that location the same day as the user
                     findAllExposed(`object`, user.objectId, userDate)
                 }
             })
@@ -54,17 +56,21 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun findAllExposed(location: Location, currentUser: String, userDate: Date) {
+        // Find who was at that location the same day as the user
         Log.i(TAG, "Finding all exposed at: " + location.placeId)
         if (location.visitors != null) {
             // Remove any visitors who came > TIME_LIMIT days ago
             val visitorHistory = parseRepository.deleteOldVisitorHistory(location.visitors as JSONArray, location)
             for (i in 0 until visitorHistory.length()) {
+                // Get the user's object ID
                 val objectId: String = (visitorHistory.get(i) as JSONObject).getString(ParseRepository.KEY_OBJECT_ID)
                 // Make sure this isn't just the current user
-                if (!objectId.equals(currentUser)) {
+                if (objectId != currentUser) {
                     // Find if exposed user and this visitor were there on the same day
-                    if (parseRepository.differenceInDays(userDate, (ParseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject))) == 0) {
+                    if (parseRepository.differenceInDays(userDate, (ParseRepository.jsonObjectToDate(visitorHistory.get(i) as JSONObject)))
+                            == DAYS_BETWEEN_VISITS) {
                         Log.i(TAG, "User exposed visitor $objectId")
+                        // This person was exposed to our user
                         parseRepository.markAsExposed(objectId, location, userDate)
                     }
                 }
@@ -76,7 +82,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun jsonToArray(exposureJson: JSONArray): ArrayList<JSONObject> {
+    private fun jsonToArray(exposureJson: JSONArray): ArrayList<JSONObject> {
+        // Convert JSONArray to ArrayList
         val exposureList = ArrayList<JSONObject>()
         for (i in 0 until exposureJson.length()) {
             exposureList.add(exposureJson.get(i) as JSONObject)
@@ -85,7 +92,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun getMessages(): ArrayList<JSONObject>? {
+        // Retrieve this users exposure messages
         val userMessages: Messages? = parseRepository.getUserMessages()
+        Log.i(TAG, "User messages: " + userMessages.toString())
         return userMessages?.getJSONArray(Messages.KEY_HISTORY)?.let { jsonToArray(it) }
+    }
+
+    companion object {
+        private const val TAG = "ProfileViewModel"
+        const val DAYS_BETWEEN_VISITS = 0
     }
 }

@@ -19,11 +19,13 @@ import java.util.*
 internal class HistoryAdapter(private val fragment: Fragment, private val exposures: MutableList<JSONObject>) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        // Display each exposure's location and date
         private val tvName: TextView = itemView.findViewById(R.id.tvName)
         private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
 
         fun bind(element: JSONObject) {
             Log.i(TAG, "Current date " + Calendar.getInstance().time.toString())
+            // Search for place name in Parse
             ParseRepository().searchPlace(element.getString(Location.KEY_PLACE_ID), GetCallback { `object`, e ->
                 if (`object` == null) {
                     // no location saved, this shouldn't ever happen
@@ -40,15 +42,11 @@ internal class HistoryAdapter(private val fragment: Fragment, private val exposu
 
                 }
             })
-
-            tvDate.text = getRelativeTimeAgo(ParseRepository.jsonObjectToDate(element))
             // TODO make this a better formatted date
+            tvDate.text = getRelativeTimeAgo(ParseRepository.jsonObjectToDate(element))
             //tvDate.text = getRelativeTimeAgo(element.getJSONObject("date").getString("iso"))
         }
-
-
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(fragment.context).inflate(R.layout.item_history, parent, false)
@@ -74,7 +72,7 @@ internal class HistoryAdapter(private val fragment: Fragment, private val exposu
 
         @JvmStatic
         fun getRelativeTimeAgo(date: Date): String {
-            // User twitter format date
+            // Turn Date into relative time format
             val format = "EEE MMM dd HH:mm:ss ZZZZZ yyyy"
             val sf = SimpleDateFormat(format, Locale.ENGLISH)
             sf.isLenient = true

@@ -18,16 +18,15 @@ import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.activity.LoginActivity
 import com.example.covidnow.adapter.HistoryAdapter
-import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.parse.ParseUser
-import org.json.JSONArray
 import org.json.JSONObject
 
 class ProfileFragment : Fragment() {
     private var tvUsername: TextView? = null
     private var tvReviewCount: TextView? = null
+    // RecyclerView showing exposure history
     private var rvHistory: RecyclerView? = null
     private var btnLogout: Button? = null
     private var btnCovid: Button? = null
@@ -43,6 +42,7 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Set up ProfileViewModel
         mViewModel = ViewModelProviders.of(this).get(ProfileViewModel::class.java)
         tvUsername = view.findViewById(R.id.tvUsername)
         tvReviewCount = view.findViewById(R.id.tvReviewCount)
@@ -67,19 +67,19 @@ class ProfileFragment : Fragment() {
         val itemDecoration: ItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
         rvHistory?.addItemDecoration(itemDecoration)
 
-        // Get this user's exposure messages
-
+        // Get this user's exposure messages for rvHistory
         mViewModel?.getMessages()?.let { adapter?.addAll(it) }
-
 
         // Listen for logout button
         btnLogout?.setOnClickListener(View.OnClickListener { view ->
             val myOnClickListener = View.OnClickListener {
                 // Logout user
                 if (mViewModel?.logout() != null) {
+                    // Logout was unsuccessful
                     Log.i(TAG, "Error logging out")
                     Toast.makeText(context, "Logout failed", Toast.LENGTH_SHORT).show()
                 } else {
+                    // logout was successful
                     Log.i(TAG, "Logout successful")
                     // Take user back to login screen
                     Toast.makeText(context, "Logout successful", Toast.LENGTH_SHORT).show()
@@ -90,6 +90,7 @@ class ProfileFragment : Fragment() {
             }
             // Make the snackbar
             Snackbar.make(view, "Are you sure you want to logout?", Snackbar.LENGTH_LONG)
+                    // Only get logged out if they click yes
                     .setAction("Yes", myOnClickListener)
                     .show()
         })

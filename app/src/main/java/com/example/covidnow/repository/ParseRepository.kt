@@ -76,6 +76,17 @@ class ParseRepository {
         user.signUpInBackground(signUpCallback)
     }
 
+    fun getMostRecentInUserHistory(): JSONObject? {
+        var locHistory = ParseUser.getCurrentUser().getJSONArray(KEY_LOCATION_HISTORY)
+        if (locHistory != null) {
+            if (locHistory.length() > 0) {
+                // Most recent entry is at the end of the list
+                return locHistory.get(locHistory.length()) as JSONObject
+            }
+        }
+        return null
+    }
+
     fun addToUserHistory(placeId: String, saveCallback: SaveCallback?): JSONArray {
         // Add this location to user's location history
         Log.i(TAG, "Adding this location to user's history")
@@ -190,6 +201,10 @@ class ParseRepository {
 
     fun differenceInDays(currDate: Date, otherDate: Date): Int {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
+    }
+
+    fun differenceInHours(currDate: Date, otherDate: Date): Int {
+        return abs(TimeUnit.HOURS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
     }
 
     private fun addMessage(user: ParseUser, location: Location, onDate: Date) {

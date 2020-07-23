@@ -50,11 +50,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addLocationToUserHistory(newLocation: JSONObject, saveCallback: SaveCallback) {
-        // Add user's current location to their history
+    fun updateHistories(newLocation: JSONObject, saveCallback: SaveCallback) {
+        // Get the place ID of this new location
         Log.i(TAG, "New Location: $newLocation")
         val finalLocation = newLocation.getJSONArray("results")[0] as JSONObject
         val placeId = (finalLocation).getString("place_id")
+        // Only add if this location has not been saved to user history in the past hour
+        var mostRecentElement: JSONObject? = parseRepository.getMostRecentInUserHistory()
+        if (mostRecentElement != null) {
+            if (mostRecentElement?.getString(Location.KEY_PLACE_ID) == placeId) {
+                // This is the same location
+                if (parseRepository.differenceInHours(ParseRepository.jsonObjectToDate(mostRecentElement), Calendar.getInstance().time) == RECORDING_TIME_LIMIT) {
+                    // Most recent entry was within the hour, don't add to history
+                    return
+
+                }
+            }
+        }
+
         // Make API call to update user in Parse
         var locHistory = parseRepository.addToUserHistory(placeId, saveCallback)
         val user = ParseUser.getCurrentUser()
@@ -226,6 +239,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         private const val TAG = "HomeViewModel"
         const val USER_HISTORY_LIMIT = 50
+        const val RECORDING_TIME_LIMIT = 0
     }
 
 }

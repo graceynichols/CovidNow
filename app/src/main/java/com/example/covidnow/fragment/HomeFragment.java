@@ -116,26 +116,6 @@ public class HomeFragment extends Fragment {
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         rvArticles.addItemDecoration(itemDecoration);
 
-        btnQuickReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Quick Review button clicked!");
-                if (mViewModel.getFinalLocation().getValue() != null) {
-                    // Case count is ready to be shown
-                    Log.i(TAG, "Location received");
-                    Fragment newFrag = new ComposeReviewFragment();
-                    Bundle result = new Bundle();
-                    // Send this location to the compose fragment
-                    result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
-                    newFrag.setArguments(result);
-                    // Start compose review fragment
-                    getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                            newFrag).addToBackStack("HomeFragment").commit();
-                } else {
-                    Toast.makeText(getContext(), "Sorry, we are retrieving your current location, please wait", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
         // Retrieve user's current location with permission
         Log.i(TAG, "Getting current location");
@@ -193,6 +173,43 @@ public class HomeFragment extends Fragment {
         };
         // Listen for news to be ready to post on home screen
         mViewModel.getAllArticles().observe(getViewLifecycleOwner(), newsObserver);
+
+        btnQuickReview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Sorry, wait for us to retrieve your location", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Listen for location to be retrieved for quick review
+        final Observer<com.example.covidnow.models.Location> finalLocationObserver = new Observer<com.example.covidnow.models.Location>() {
+            @Override
+            public void onChanged(@Nullable final com.example.covidnow.models.Location currLocation) {
+                // News is ready to be added to recyclerview
+                Log.i(TAG, "Location received from view model as Location");
+                btnQuickReview.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.i(TAG, "Quick Review button clicked!");
+                        if (mViewModel.getFinalLocation().getValue() != null) {
+                            // Case count is ready to be shown
+                            Log.i(TAG, "Location received");
+                            Fragment newFrag = new ComposeReviewFragment();
+                            Bundle result = new Bundle();
+                            // Send this location to the compose fragment
+                            result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
+                            newFrag.setArguments(result);
+                            // Start compose review fragment
+                            getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                                    newFrag).addToBackStack("HomeFragment").commit();
+                        }
+                    }
+                });
+            }
+        };
+        // Listen for news to be ready to post on home screen
+        mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
+
     }
 
     @Override

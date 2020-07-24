@@ -191,18 +191,15 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         Log.i(TAG, "Quick Review button clicked!");
-                        if (mViewModel.getFinalLocation().getValue() != null) {
-                            // Case count is ready to be shown
-                            Log.i(TAG, "Location received");
-                            Fragment newFrag = new ComposeReviewFragment();
-                            Bundle result = new Bundle();
-                            // Send this location to the compose fragment
-                            result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
-                            newFrag.setArguments(result);
-                            // Start compose review fragment
-                            getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                                    newFrag).addToBackStack("HomeFragment").commit();
-                        }
+                        // Location ready to be used for quick review
+                        Fragment newFrag = new ComposeReviewFragment();
+                        Bundle result = new Bundle();
+                        // Send this location to the compose fragment
+                        result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
+                        newFrag.setArguments(result);
+                        // Start compose review fragment
+                        getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                                newFrag).addToBackStack("HomeFragment").commit();
                     }
                 });
             }

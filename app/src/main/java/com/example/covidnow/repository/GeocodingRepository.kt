@@ -15,6 +15,8 @@ class GeocodingRepository {
         client[geoUrl, jsonHttpResponseHandler]
     }
 
+
+
     companion object {
         private const val TAG = "GeocodingRepository"
         const val GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng="

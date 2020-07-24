@@ -14,7 +14,8 @@ class PlacesRepository {
         // Search for relevant nearby locations
         val coords = "$lat,$lng"
         params["location"] = coords
-        params["radius"] = SEARCH_RADIUS
+        //params["radius"] = SEARCH_RADIUS
+        params["rankby"] = "distance"
         params["keyword"] = search
         params["opennow"] = "true"
         Log.i(TAG, "Coordinates: $coords")

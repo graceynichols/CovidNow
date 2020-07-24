@@ -146,7 +146,16 @@ public class MapsFragment extends Fragment {
         adapterPlaces = new ArrayList<>();
         adapter = new PlacesAdapter(fragment, adapterPlaces);
 
+        // Initialize recyclerview
+        rvPlaces.setAdapter(adapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        rvPlaces.setLayoutManager(layoutManager);
 
+        // Add lines between recycler view
+        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+        rvPlaces.addItemDecoration(itemDecoration);
+
+        // Setup map view
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
@@ -159,12 +168,12 @@ public class MapsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String search = etSearch.getText().toString();
+                // Automatically put keyboard away
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
-                    rvPlaces.setAdapter(adapter);
                     // Locate nearby places
                     if (coordinates == null) {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
@@ -183,15 +192,6 @@ public class MapsFragment extends Fragment {
                     };
                     mViewModel.getNearbyPlacesJson().observe(getViewLifecycleOwner(), placesJSONObserver);
 
-                    // Make recyclerview visible at the bottom
-                    card.setVisibility(View.VISIBLE);
-                    // Initialize recyclerview
-                    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-                    rvPlaces.setLayoutManager(layoutManager);
-
-                    // Add lines between recycler view
-                    RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
-                    rvPlaces.addItemDecoration(itemDecoration);
 
                     // Listen for List<Location> received from ParseRepo
                     final Observer<List<com.example.covidnow.models.Location>> placesListObserver = new Observer<List<com.example.covidnow.models.Location>>() {
@@ -200,6 +200,8 @@ public class MapsFragment extends Fragment {
                             // List of places ready to be given to recyclerview
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
+                            // Make recyclerview visible when ready to show info
+                            card.setVisibility(View.VISIBLE);
                         }
                     };
                     mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);
@@ -211,8 +213,8 @@ public class MapsFragment extends Fragment {
         final Observer<com.example.covidnow.models.Location> finalLocationObserver = new Observer<com.example.covidnow.models.Location>() {
             @Override
             public void onChanged(@Nullable final com.example.covidnow.models.Location currLocation) {
-                // News is ready to be added to recyclerview
                 Log.i(TAG, "Location received from view model as Location");
+                // Listen for user to press quick review button
                 btnQuickReview.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -225,13 +227,13 @@ public class MapsFragment extends Fragment {
                         newFrag.setArguments(result);
                         // Start compose review fragment
                         getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                                newFrag).addToBackStack("HomeFragment").commit();
+                                newFrag).addToBackStack("MapsFragment").commit();
 
                     }
                 });
             }
         };
-        // Listen for news to be ready to post on home screen
+        // Listen for location to be ready to be reviewed
         mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
     }
 
@@ -308,6 +310,7 @@ public class MapsFragment extends Fragment {
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     protected void startLocationUpdates() {
+        // Keep track if location changes
         mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);

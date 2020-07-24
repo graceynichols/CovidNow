@@ -49,6 +49,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
@@ -56,6 +57,7 @@ import com.parse.ParseQuery;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +76,7 @@ public class MapsFragment extends Fragment {
     private MapsFragment fragment = this;
     private EditText etSearch;
     private ImageButton btnSearch;
+    private FloatingActionButton btnQuickReview;
     private CardView card;
     private RecyclerView rvPlaces;
     private final static String KEY_LOCATION = "location";
@@ -137,6 +140,7 @@ public class MapsFragment extends Fragment {
         btnSearch = view.findViewById(R.id.btnSearch);
         rvPlaces = view.findViewById(R.id.rvPlaces);
         card = view.findViewById(R.id.card);
+        btnQuickReview = view.findViewById(R.id.btnQuickReview);
 
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
@@ -202,6 +206,33 @@ public class MapsFragment extends Fragment {
                 }
             }
         });
+
+        // Listen for location to be retrieved for quick review
+        final Observer<com.example.covidnow.models.Location> finalLocationObserver = new Observer<com.example.covidnow.models.Location>() {
+            @Override
+            public void onChanged(@Nullable final com.example.covidnow.models.Location currLocation) {
+                // News is ready to be added to recyclerview
+                Log.i(TAG, "Location received from view model as Location");
+                btnQuickReview.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.i(TAG, "Quick Review button clicked!");
+                        // Location ready to be used for quick review
+                        Fragment newFrag = new ComposeReviewFragment();
+                        Bundle result = new Bundle();
+                        // Send this location to the compose fragment
+                        result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
+                        newFrag.setArguments(result);
+                        // Start compose review fragment
+                        getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                                newFrag).addToBackStack("HomeFragment").commit();
+
+                    }
+                });
+            }
+        };
+        // Listen for news to be ready to post on home screen
+        mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
     }
 
     @Override
@@ -226,6 +257,8 @@ public class MapsFragment extends Fragment {
                             Log.i(TAG, "Location: " + location2.toString());
                             // Give coordinates to view model
                             coordinates = Pair.create(location2.getLatitude(), location2.getLongitude());
+                            // Query location in case they use quick review
+                            mViewModel.getCurrentLocation(getContext().getString(R.string.google_maps_key), coordinates);
                             mCurrentLocation = location2;
                             moveCameraToLocation(location2);
                             // Listen for location changes

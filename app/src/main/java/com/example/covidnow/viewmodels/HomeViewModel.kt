@@ -26,6 +26,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var caseCount: MutableLiveData<String>? = null
     private var allArticles: MutableLiveData<List<Article>>? = null
     private var jsonLocation: MutableLiveData<JSONObject>? = null
+    private var finalLocation: MutableLiveData<Location>? = null
     private val newsRepository: NewsRepository = NewsRepository()
     private val parseRepository: ParseRepository = ParseRepository()
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
@@ -48,6 +49,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun getLocationAsLocation(currentLocation: JSONObject) {
+        // Now add this user to that location's visitors
+        val jsonLocation = currentLocation.getJSONArray("results")[0] as JSONObject
+        val placeId = (jsonLocation).getString("place_id")
+        parseRepository.searchPlace(placeId, GetCallback { `object`, _ ->
+            if (`object` == null) {
+                // no location saved, must create new one
+                try {
+                    Log.i(TAG, "This location was NOT previously saved $placeId")
+                    // Create this location from the given Json
+                    finalLocation?.postValue(Location.fromGeocodingJson(jsonLocation))
+                } catch (ex: JSONException) {
+                    ex.printStackTrace()
+                    Log.i(TAG, "Error parsing location from JSON")
+                }
+            } else {
+                // The location was saved in parse
+                Log.i(TAG, "* This location WAS previously saved $placeId")
+                finalLocation?.postValue(`object`)
+            }
+        })
     }
 
     fun updateHistories(newLocation: JSONObject, saveCallback: SaveCallback) {
@@ -187,6 +211,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             jsonLocation = MutableLiveData()
         }
         return jsonLocation as MutableLiveData<JSONObject>
+    }
+
+    fun getFinalLocation(): LiveData<Location> {
+        if (finalLocation == null) {
+            finalLocation = MutableLiveData()
+        }
+        return finalLocation as MutableLiveData<Location>
     }
 
     fun getAllArticles(): LiveData<List<Article>> {

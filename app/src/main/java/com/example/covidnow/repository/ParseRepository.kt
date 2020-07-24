@@ -29,15 +29,8 @@ class ParseRepository {
 
     fun saveLocation(newLocation: Location) {
         // Last updated at = current date
-        newLocation.setUpdatedAt()
         newLocation.visitors = JSONArray()
-        newLocation.saveInBackground { e ->
-            if (e != null) {
-                Log.e(TAG, "Error while saving location", e)
-            } else {
-                Log.i(TAG, "Location save successful")
-            }
-        }
+        newLocation.save()
     }
 
     fun markAsExposed(objectId: String, location: Location, onDate: Date) {

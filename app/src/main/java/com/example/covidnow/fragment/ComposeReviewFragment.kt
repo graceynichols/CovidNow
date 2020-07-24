@@ -19,6 +19,7 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.viewmodels.ComposeReviewViewModel
 import com.parse.ParseFile
 import com.parse.ParseUser
+import com.parse.SaveCallback
 import org.parceler.Parcels
 import java.io.File
 
@@ -26,8 +27,8 @@ class ComposeReviewFragment : Fragment() {
     private val photoFileName = "photo.jpg"
     private var btnCaptureImage: Button? = null
     private var ivPostImage: ImageView? = null
-    private var ivHotspot: ImageView? = null
     private var switchHotspot: Switch? = null
+    private var tvName: TextView? = null
     private var btnSubmit: Button? = null
     private var location: Location? = null
     private var photoFile: File? = null
@@ -47,23 +48,19 @@ class ComposeReviewFragment : Fragment() {
         ivPostImage = view.findViewById(R.id.ivPostImage)
         btnSubmit = view.findViewById(R.id.btnSubmit)
         pb = view.findViewById(R.id.pbLoading)
-        ivHotspot = view.findViewById(R.id.ivHotspot)
         switchHotspot = view.findViewById(R.id.switchHotspot)
+        tvName = view.findViewById(R.id.tvName)
+
+        // Get location info from parcel
         location = Parcels.unwrap<Location>(arguments?.getParcelable("location"))
+
+        //Display location name
+        tvName?.text = location?.name
 
         // Make switch reflect whether this was a hotspot already or not
         if (location?.isHotspot == true) {
             switchHotspot?.isChecked = true
-            ivHotspot?.visibility = View.VISIBLE
         }
-        // Show caution symbol if marked as hotspot
-        switchHotspot?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, b ->
-            if (b) {
-                ivHotspot?.visibility = View.GONE
-            } else {
-                ivHotspot?.visibility = View.VISIBLE
-            }
-        })
 
         // Button to take a picture
         btnCaptureImage?.setOnClickListener(View.OnClickListener { launchCamera() })
@@ -72,14 +69,20 @@ class ComposeReviewFragment : Fragment() {
         btnSubmit?.setOnClickListener(View.OnClickListener { // Start progress bar
             pb?.visibility = ProgressBar.VISIBLE
             if (photoFile != null) {
+                Log.i(TAG, "We have a photo file")
                 photoParseFile = ParseFile(photoFile)
             }
+
+
             switchHotspot?.isChecked?.let { it1 -> mViewModel?.saveReview(location as Location, photoParseFile, ParseUser.getCurrentUser(), it1) }
             pb?.visibility = View.GONE
+            Log.i(TAG, "User saved")
             Toast.makeText(context, "Review Saved!", Toast.LENGTH_SHORT).show()
 
             // Return to details activity
             goDetailsActivity()
+
+
         })
     }
 
@@ -88,7 +91,6 @@ class ComposeReviewFragment : Fragment() {
         val result = Bundle()
         // Send this location to the compose fragment
         result.putParcelable("location", Parcels.wrap(location))
-        result.putString(getString(R.string.picture_url), photoParseFile?.url)
         newFrag.arguments = result
         // Start compose review fragment
         fragmentManager?.beginTransaction()?.replace(R.id.flContainer,

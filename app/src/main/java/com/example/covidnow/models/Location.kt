@@ -42,13 +42,6 @@ class Location : ParseObject() {
             }
         }
 
-    override fun getUpdatedAt(): Date? {
-        return getDate(KEY_UPDATED_AT)
-    }
-
-    fun setUpdatedAt() {
-        put(KEY_UPDATED_AT, Calendar.getInstance().time)
-    }
 
     var image: ParseFile?
         get() = getParseFile(KEY_IMAGE)

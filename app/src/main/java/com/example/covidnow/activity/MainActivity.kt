@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
             // Create new fragments, otherwise use saved ones
+            Log.i(TAG, "Creating new frags")
             homeFragment = HomeFragment()
             mapsFragment = MapsFragment()
             profileFragment = ProfileFragment()
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         private var mapsFragment: MapsFragment? = null
         private var homeFragment: HomeFragment? = null
         private var profileFragment: ProfileFragment? = null
+        private var fragmentManager: FragmentManager? = null
         private var ft: FragmentTransaction? = null
         fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager, profFrag: ProfileFragment?, mapsFrag: MapsFragment?, homeFrag: HomeFragment?) {
             bottomNavigationView?.setOnNavigationItemSelectedListener { menuItem ->
@@ -60,64 +62,88 @@ class MainActivity : AppCompatActivity() {
                 homeFragment = homeFrag
                 profileFragment = profFrag
                 ft = fManager.beginTransaction()
+                fragmentManager = fManager
                 when (menuItem.itemId) {
-                    R.id.action_profile -> displayProfile()
-                    R.id.action_map -> displayMaps()
-                    else ->
+                    R.id.action_profile -> {
+                        ft?.replace(R.id.flContainer, profileFragment as ProfileFragment)
+                        ft?.addToBackStack("ProfileFragment")
+                    }
+                    R.id.action_map -> {
+                        ft?.replace(R.id.flContainer, mapsFragment as MapsFragment)
+                        ft?.addToBackStack("MapsFragment")
+                    }
+                    else ->{
                         // Go to home fragment
-                        displayHome()
+                        ft?.replace(R.id.flContainer, homeFragment as HomeFragment)
+                        ft?.addToBackStack("HomeFragment")
+                    }
+
                 }
+
+                ft?.commit()
                 true
             }
         }
 
         private fun displayMaps() {
+            Log.i(TAG, "Fragments: " + fragmentManager?.fragments.toString())
+            var flag = true
             if (mapsFragment?.isAdded == true) {
+                Log.i(TAG, "Home already in container")
                 // Maps already in container
                 ft?.show(mapsFragment as MapsFragment)
             } else {
                 (ft as FragmentTransaction).add(R.id.flContainer, mapsFragment as MapsFragment)
             }
-            when {
-                homeFragment?.isAdded == true -> {
-                    ft?.hide(homeFragment as HomeFragment)
-                }
-                profileFragment?.isAdded == true -> {
-                    ft?.hide(profileFragment as ProfileFragment)
-                }
-                else -> {
-                    // The existing fragment doesn't need to be saved
-                    ft?.replace(R.id.flContainer, mapsFragment as MapsFragment)
-                    ft?.show(mapsFragment as MapsFragment)
-                }
+            if ( homeFragment?.isAdded == true) {
+                flag = false
+                Log.i(TAG, "Home was added")
+                ft?.hide(homeFragment as HomeFragment)
+            }
+            if ( profileFragment?.isAdded == true) {
+                flag = false
+                Log.i(TAG, "Profile was added")
+                ft?.hide(profileFragment as ProfileFragment)
+            }
+            if (flag) {
+                Log.i(TAG, "Don't need to save old fragment")
+                ft?.replace(R.id.flContainer, mapsFragment as MapsFragment)
+                ft?.show(mapsFragment as MapsFragment)
             }
             ft?.commit()
         }
 
         private fun displayHome() {
+            var flag = true
+            Log.i(TAG, "Fragments: " + fragmentManager?.fragments.toString())
             if (homeFragment?.isAdded == true) {
+                Log.i(TAG, "Maps already in container")
                 // Maps already in container
                 ft?.show(homeFragment as HomeFragment)
             } else {
                 (ft as FragmentTransaction).add(R.id.flContainer, homeFragment as HomeFragment)
             }
-            when {
-                mapsFragment?.isAdded == true -> {
-                    ft?.hide(mapsFragment as MapsFragment)
-                }
-                profileFragment?.isAdded == true -> {
-                    ft?.hide(profileFragment as ProfileFragment)
-                }
-                else -> {
-                    // The existing fragment doesn't need to be saved
-                    ft?.replace(R.id.flContainer, homeFragment as HomeFragment)
-                    ft?.show(homeFragment as HomeFragment)
-                }
+            if ( mapsFragment?.isAdded == true) {
+                Log.i(TAG, "Maps was added")
+                ft?.hide(mapsFragment as MapsFragment)
+                flag = false
+            }
+            if ( profileFragment?.isAdded == true) {
+                Log.i(TAG, "Profile was added")
+                ft?.hide(profileFragment as ProfileFragment)
+                flag = false
+            }
+            if (flag) {
+                Log.i(TAG, "Don't need to save old fragment")
+                ft?.replace(R.id.flContainer, homeFragment as HomeFragment)
+                ft?.show(homeFragment as HomeFragment)
             }
             ft?.commit()
         }
 
         private fun displayProfile() {
+            var flag = true
+            Log.i(TAG, "Fragments: " + fragmentManager?.fragments.toString())
             if (profileFragment?.isAdded == true) {
                 // Profile already in container
                 Log.i(TAG, "Profile already in container")
@@ -127,19 +153,20 @@ class MainActivity : AppCompatActivity() {
                 (ft as FragmentTransaction).add(R.id.flContainer, profileFragment as ProfileFragment)
             }
             // Hide any other fragments already added
-            when {
-                mapsFragment?.isAdded == true -> {
-                    ft?.hide(mapsFragment as MapsFragment)
-                }
-                homeFragment?.isAdded == true -> {
-                    ft?.hide(homeFragment as HomeFragment)
-                }
-                else -> {
-                    // The existing fragment doesn't need to be saved
-                    Log.i(TAG, "Existing fragment doesn't need to be saved")
-                    ft?.replace(R.id.flContainer, profileFragment as ProfileFragment, null)
-                    ft?.show(profileFragment as ProfileFragment)
-                }
+            if ( mapsFragment?.isAdded == true) {
+                Log.i(TAG, "Maps was added")
+                ft?.hide(mapsFragment as MapsFragment)
+                flag = false
+            }
+            if ( homeFragment?.isAdded == true) {
+                Log.i(TAG, "Home was added")
+                ft?.hide(homeFragment as HomeFragment)
+            }
+            if (flag) {
+                flag = false
+                Log.i(TAG, "Don't need to save old fragment")
+                ft?.replace(R.id.flContainer, profileFragment as ProfileFragment)
+                ft?.show(profileFragment as ProfileFragment)
             }
             ft?.commit()
 

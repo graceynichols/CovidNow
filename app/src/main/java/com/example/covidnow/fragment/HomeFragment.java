@@ -39,6 +39,7 @@ import com.example.covidnow.viewmodels.HomeViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -46,6 +47,7 @@ import com.parse.SaveCallback;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvArticles;
     private Fragment fragment = this;
     private TextView tvCases;
+    private FloatingActionButton btnQuickReview;
     private ProgressBar pbLoading;
     private HomeViewModel mViewModel;
     private static List<Article> adapterArticles;
@@ -95,6 +98,7 @@ public class HomeFragment extends Fragment {
         rvArticles = view.findViewById(R.id.rvArticles);
         tvCases = view.findViewById(R.id.tvCases);
         pbLoading = view.findViewById(R.id.pbLoading);
+        btnQuickReview = view.findViewById(R.id.btnQuickReview);
 
         // Adapter setup
         adapterArticles = new ArrayList<>();
@@ -111,6 +115,7 @@ public class HomeFragment extends Fragment {
         // Add lines between recycler view
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         rvArticles.addItemDecoration(itemDecoration);
+
 
         // Retrieve user's current location with permission
         Log.i(TAG, "Getting current location");
@@ -132,7 +137,9 @@ public class HomeFragment extends Fragment {
                     }
                 });
                 // Location is ready to be passed to news api
-                mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
+                mViewModel.getLocationAsLocation(newLocation);
+                // TODO Uncomment this when I wanna make news calls
+                //mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
             }
         };
 
@@ -145,6 +152,7 @@ public class HomeFragment extends Fragment {
             public void onChanged(@Nullable final String caseCount) {
                 // Case count is ready to be shown
                 Log.i(TAG, "News received from View Model");
+                // TODO make number readable
                 tvCases.setText(caseCount);
             }
         };
@@ -165,6 +173,40 @@ public class HomeFragment extends Fragment {
         };
         // Listen for news to be ready to post on home screen
         mViewModel.getAllArticles().observe(getViewLifecycleOwner(), newsObserver);
+
+        btnQuickReview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Sorry, wait for us to retrieve your location", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Listen for location to be retrieved for quick review
+        final Observer<com.example.covidnow.models.Location> finalLocationObserver = new Observer<com.example.covidnow.models.Location>() {
+            @Override
+            public void onChanged(@Nullable final com.example.covidnow.models.Location currLocation) {
+                // News is ready to be added to recyclerview
+                Log.i(TAG, "Location received from view model as Location");
+                btnQuickReview.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.i(TAG, "Quick Review button clicked!");
+                        // Location ready to be used for quick review
+                        Fragment newFrag = new ComposeReviewFragment();
+                        Bundle result = new Bundle();
+                        // Send this location to the compose fragment
+                        result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
+                        newFrag.setArguments(result);
+                        // Start compose review fragment
+                        getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                                newFrag).addToBackStack("HomeFragment").commit();
+                    }
+                });
+            }
+        };
+        // Listen for news to be ready to post on home screen
+        mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
+
     }
 
     @Override

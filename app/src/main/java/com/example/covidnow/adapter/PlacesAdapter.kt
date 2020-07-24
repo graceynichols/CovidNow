@@ -17,7 +17,7 @@ import org.parceler.Parcels
 
 class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Location>) : RecyclerView.Adapter<PlacesAdapter.ViewHolder>() {
     private val context: Context? = fragment.context
-    private val locations: MutableList<Location> = locations
+    private var locations: MutableList<Location> = locations
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvName: TextView = itemView.findViewById(R.id.tvName)
@@ -66,8 +66,9 @@ class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Locat
         notifyDataSetChanged()
     }
 
-    fun addAll(newPlaces: Collection<Location>) {
-        locations.addAll(newPlaces)
+    fun addAll(newPlaces: MutableList<Location>) {
+        newPlaces.addAll(locations)
+        locations = newPlaces
         notifyDataSetChanged()
     }
 

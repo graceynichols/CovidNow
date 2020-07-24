@@ -16,6 +16,9 @@
             app:destination="@id/articleDetailsFragment"
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@anim/fragment_open_exit" />
+        <action
+            android:id="@+id/action_homeFragment_to_composeReviewFragment"
+            app:destination="@id/composeReviewFragment" />
     </fragment>
     <fragment
         android:id="@+id/articleDetailsFragment"
@@ -71,9 +74,4 @@
         android:id="@+id/action_global_homeFragment"
         app:destination="@id/homeFragment"
         app:enterAnim="@anim/fragment_open_enter" />
-    <action
-        android:id="@+id/action_global_articleDetailsFragment"
-        app:destination="@id/articleDetailsFragment"
-        app:enterAnim="@anim/fragment_open_enter"
-        app:exitAnim="@anim/fragment_open_exit" />
 </navigation>

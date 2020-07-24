@@ -21,18 +21,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.codepath.asynchttpclient.AsyncHttpClient;
-import com.codepath.asynchttpclient.RequestParams;
-import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.adapter.PlacesAdapter;
 import com.example.covidnow.R;
-import com.example.covidnow.repository.PlacesRepository;
-import com.example.covidnow.viewmodels.HomeViewModel;
+import com.example.covidnow.helpers.RecyclerViewSwipeListener;
 import com.example.covidnow.viewmodels.MapsViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -50,23 +47,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import okhttp3.Headers;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+import static android.view.View.GONE;
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 @RuntimePermissions
@@ -155,6 +146,22 @@ public class MapsFragment extends Fragment {
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         rvPlaces.addItemDecoration(itemDecoration);
 
+        rvPlaces.setOnFlingListener(new RecyclerViewSwipeListener(true) {
+            @Override
+            public void onSwipeDown() {
+                card.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                        R.anim.slide_down));
+                card.setVisibility(GONE);
+            }
+
+            @Override
+            public void onSwipeUp() {
+                card.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                        R.anim.slide_up));
+                card.setVisibility(View.VISIBLE);
+            }
+        });
+
         // Setup map view
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -200,7 +207,9 @@ public class MapsFragment extends Fragment {
                             // List of places ready to be given to recyclerview
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
-                            // Make recyclerview visible when ready to show info
+                            // Make places list slide up
+                            card.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                                    R.anim.slide_up));
                             card.setVisibility(View.VISIBLE);
                         }
                     };

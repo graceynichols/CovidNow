@@ -21,7 +21,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         return numReviews?.toInt() ?: 0
     }
 
-    fun logout(): ParseUser {
+    fun logout(): ParseUser? {
         // Logout user
         ParseUser.logOut()
         return ParseUser.getCurrentUser()

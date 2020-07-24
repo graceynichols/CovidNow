@@ -43,8 +43,7 @@ class ParseRepository {
         query.getFirstInBackground { `object`, e ->
             if (`object` == null) {
                 // User not previously saved, this shouldn't happen
-                Log.i(TAG, "User not previously saved")
-                Log.i(TAG, e.toString())
+                Log.i(TAG, "User not previously saved, this shouldn't happen")
             } else {
                 // User was found in Parse
                 Log.i(TAG, "User " +  `object`.username + " found in parse, marking as exposed")
@@ -213,6 +212,7 @@ class ParseRepository {
                 // Find most recent element's date
                 val mostRecentDate: Date = jsonObjectToDate((mostRecentHistory))
                 if (differenceInDays(onDate, mostRecentDate) == 0) {
+                    Log.i(TAG, "User " + user.objectId + "has already been notified about " + location.placeId)
                     // It was the same day, don't notify them
                     return
                 }

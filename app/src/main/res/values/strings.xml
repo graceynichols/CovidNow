@@ -18,5 +18,6 @@
     <string name="i_have_covid_19">I have COVID-19</string>
     <string name="textview">TextView</string>
     <string name="exposure_history">Exposure History:</string>
+    <string name="hotspot">Hotspot?</string>
 
 </resources>

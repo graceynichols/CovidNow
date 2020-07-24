@@ -53,23 +53,22 @@
         android:id="@+id/switchHotspot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/tvName"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/hotspot" />
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="15dp"
-        android:text="Hotspot?" />
-
-    <ImageView
-        android:id="@+id/ivHotspot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="false"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="9dp"
-        android:layout_toEndOf="@+id/switchHotspot"
-        android:src="@drawable/baseline_warning_black_18dp"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/textview"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>

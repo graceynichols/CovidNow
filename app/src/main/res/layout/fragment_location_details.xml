@@ -7,12 +7,14 @@
 
     <TextView
         android:id="@+id/tvName"
-        android:layout_width="wrap_content"
+        android:layout_width="278dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="10dp"
+        android:layout_toStartOf="@+id/ivHotspot"
         android:textSize="24sp"
         android:textStyle="bold"
         tools:text="My House" />
@@ -44,10 +46,10 @@
         android:id="@+id/tvLastHotspotD"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ivHotspot"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="8dp"
+        android:layout_below="@+id/tvName"
+        android:layout_alignParentEnd="false"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="@string/last_updated"
         android:textSize="14sp" />
 
@@ -55,10 +57,11 @@
         android:id="@+id/tvHotspotDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvLastHotspotD"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_alignTop="@+id/tvLastHotspotD"
+        android:layout_alignParentEnd="false"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/tvLastHotspotD"
         android:text="@string/n_a"
         android:textSize="14sp"
         tools:text="7/15/20" />
@@ -71,20 +74,20 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="9dp"
         android:src="@drawable/image_placeholder"
         tools:src="@tools:sample/avatars" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvHotspotDate"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignBottom="@+id/ivImage"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="31dp"
-        android:layout_marginTop="189dp"
-        android:layout_marginEnd="38dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="30dp"
         android:backgroundTint="@android:color/holo_purple"
         android:src="@drawable/baseline_edit_white_18dp"
         app:fabSize="normal" />

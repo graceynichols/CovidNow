@@ -26,8 +26,8 @@ class ComposeReviewFragment : Fragment() {
     private val photoFileName = "photo.jpg"
     private var btnCaptureImage: Button? = null
     private var ivPostImage: ImageView? = null
-    private var ivHotspot: ImageView? = null
     private var switchHotspot: Switch? = null
+    private var tvName: TextView? = null
     private var btnSubmit: Button? = null
     private var location: Location? = null
     private var photoFile: File? = null
@@ -47,23 +47,19 @@ class ComposeReviewFragment : Fragment() {
         ivPostImage = view.findViewById(R.id.ivPostImage)
         btnSubmit = view.findViewById(R.id.btnSubmit)
         pb = view.findViewById(R.id.pbLoading)
-        ivHotspot = view.findViewById(R.id.ivHotspot)
         switchHotspot = view.findViewById(R.id.switchHotspot)
+        tvName = view.findViewById(R.id.tvName)
+
+        // Get location info from parcel
         location = Parcels.unwrap<Location>(arguments?.getParcelable("location"))
+
+        //Display location name
+        tvName?.text = location?.name
 
         // Make switch reflect whether this was a hotspot already or not
         if (location?.isHotspot == true) {
             switchHotspot?.isChecked = true
-            ivHotspot?.visibility = View.VISIBLE
         }
-        // Show caution symbol if marked as hotspot
-        switchHotspot?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, b ->
-            if (b) {
-                ivHotspot?.visibility = View.GONE
-            } else {
-                ivHotspot?.visibility = View.VISIBLE
-            }
-        })
 
         // Button to take a picture
         btnCaptureImage?.setOnClickListener(View.OnClickListener { launchCamera() })

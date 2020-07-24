@@ -10,9 +10,11 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.covidnow.R
+import com.example.covidnow.adapter.HistoryAdapter
 import com.example.covidnow.models.Location
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.parceler.Parcels
+import java.util.*
 
 class LocationDetailsFragment : Fragment() {
     private var location: Location? = null
@@ -50,8 +52,11 @@ class LocationDetailsFragment : Fragment() {
             tvName?.text = location?.name
             tvAddress?.text = location?.address
         }
+
         if (location?.updatedAt != null) {
-            tvHotspotDate?.text = location?.updatedAt.toString()
+            Log.i(TAG, "HERE")
+            tvHotspotDate?.text = HistoryAdapter.getRelativeTimeAgo(location?.updatedAt as Date)
+
         }
         if (location?.isHotspot == true) {
             // Make caution sign appear

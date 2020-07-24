@@ -29,7 +29,6 @@ class ParseRepository {
 
     fun saveLocation(newLocation: Location) {
         // Last updated at = current date
-        newLocation.setUpdatedAt()
         newLocation.visitors = JSONArray()
         newLocation.saveInBackground { e ->
             if (e != null) {

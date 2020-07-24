@@ -157,8 +157,8 @@ public class HomeFragment extends Fragment {
                     }
                 });
                 // Location is ready to be passed to news api
-                // TODO Uncomment this when I wanna make news calls
                 mViewModel.getLocationAsLocation(newLocation);
+                // TODO Uncomment this when I wanna make news calls
                 //mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
             }
         };
@@ -172,6 +172,7 @@ public class HomeFragment extends Fragment {
             public void onChanged(@Nullable final String caseCount) {
                 // Case count is ready to be shown
                 Log.i(TAG, "News received from View Model");
+                // TODO make number readable
                 tvCases.setText(caseCount);
             }
         };

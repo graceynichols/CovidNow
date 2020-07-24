@@ -54,29 +54,21 @@ class LocationDetailsFragment : Fragment() {
         }
 
         if (location?.updatedAt != null) {
-            Log.i(TAG, "HERE")
             tvHotspotDate?.text = HistoryAdapter.getRelativeTimeAgo(location?.updatedAt as Date)
 
         }
         if (location?.isHotspot == true) {
-            // Make caution sign appear
+            // Make caution sign appear if a hotspot
             ivHotspot?.visibility = View.VISIBLE
         }
+        // Check if there's a photo file to display
         if (location?.image != null) {
-            Log.i(TAG, "Location has picture")
-            if (location?.image?.url == null) {
-                // Picture is saved in arguments
-                Log.i(TAG, "Picture is saved in arguments")
-                if (arguments?.getString(getString(R.string.picture_url)) != null) {
-                    Log.i(TAG, "Got picture")
-                    context?.let { Glide.with(it).load(arguments?.getString(getString(R.string.picture_url))).centerCrop().into(ivImage as ImageView) }
-                }
-            } else {
-                context?.let { Glide.with(it).load(location?.image?.url).centerCrop().into(ivImage as ImageView) }
-            }
+            Log.i(TAG, "Location has picture ")
+            context?.let { Glide.with(it).load(location?.image?.url).centerCrop().into(ivImage as ImageView) }
         } else {
             Log.i(TAG, "Location has no picture")
         }
+        // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
             Log.i(TAG, "Edit button clicked!")
             val newFrag: Fragment = ComposeReviewFragment()

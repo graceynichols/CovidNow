@@ -19,6 +19,7 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.viewmodels.ComposeReviewViewModel
 import com.parse.ParseFile
 import com.parse.ParseUser
+import com.parse.SaveCallback
 import org.parceler.Parcels
 import java.io.File
 
@@ -68,14 +69,20 @@ class ComposeReviewFragment : Fragment() {
         btnSubmit?.setOnClickListener(View.OnClickListener { // Start progress bar
             pb?.visibility = ProgressBar.VISIBLE
             if (photoFile != null) {
+                Log.i(TAG, "We have a photo file")
                 photoParseFile = ParseFile(photoFile)
             }
+
+
             switchHotspot?.isChecked?.let { it1 -> mViewModel?.saveReview(location as Location, photoParseFile, ParseUser.getCurrentUser(), it1) }
             pb?.visibility = View.GONE
+            Log.i(TAG, "User saved")
             Toast.makeText(context, "Review Saved!", Toast.LENGTH_SHORT).show()
 
             // Return to details activity
             goDetailsActivity()
+
+
         })
     }
 
@@ -84,7 +91,6 @@ class ComposeReviewFragment : Fragment() {
         val result = Bundle()
         // Send this location to the compose fragment
         result.putParcelable("location", Parcels.wrap(location))
-        result.putString(getString(R.string.picture_url), photoParseFile?.url)
         newFrag.arguments = result
         // Start compose review fragment
         fragmentManager?.beginTransaction()?.replace(R.id.flContainer,

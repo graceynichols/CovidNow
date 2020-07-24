@@ -6,6 +6,7 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.repository.ParseRepository
 import com.parse.ParseFile
 import com.parse.ParseUser
+import com.parse.SaveCallback
 
 class ComposeReviewViewModel(application: Application) : AndroidViewModel(application) {
     private val parseRepository: ParseRepository = ParseRepository()

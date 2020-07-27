@@ -18,10 +18,8 @@
         android:id="@+id/tvReview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="18dp"
-        android:layout_toEndOf="@+id/tvUsername"
+        android:layout_below="@+id/tvUsername"
+        android:layout_marginTop="5dp"
 
         android:text="@string/reviews" />
 
@@ -39,22 +37,43 @@
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvReview"
+        android:layout_below="@+id/btnCovid"
         android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="5dp"
+        android:backgroundTint="@color/light_blue"
         android:text="@string/logout"
+        android:textColor="@color/design_default_color_background" />
+
+    <Button
+        android:id="@+id/btnResetPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnLogout"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="5dp"
+        android:backgroundTint="@color/light_blue"
+        android:text="@string/reset_password"
         android:textColor="@color/design_default_color_background" />
 
     <Button
         android:id="@+id/btnCovid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnLogout"
+        android:layout_below="@+id/tvReview"
         android:layout_alignParentStart="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:backgroundTint="@color/design_default_color_error"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:backgroundTint="@color/light_blue"
         android:text="@string/i_have_covid_19"
         android:textColor="@color/design_default_color_on_primary" />
 
@@ -72,9 +91,10 @@
         android:id="@+id/tvExposureHistory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnCovid"
+        android:layout_below="@+id/btnResetPassword"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp"
+        android:layout_alignParentBottom="false"
+        android:layout_marginTop="12dp"
         android:text="@string/exposure_history"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 

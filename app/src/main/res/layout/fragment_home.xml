@@ -39,7 +39,7 @@
         android:background="#DFDCDC"
         android:padding="8dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textSize="30sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         tools:text="Atlanta Case Count: 1,000" />
 

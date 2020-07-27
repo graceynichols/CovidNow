@@ -144,11 +144,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     Log.i(TAG, "News Response: $json")
                     try {
+                        // Format number of cases
                         val caseNumber =  NumberFormat.getInstance().format(Integer.parseInt(json.jsonObject.getJSONObject("stats")
                                 .getString("totalConfirmedCases")))
 
                         // Format the state/province + case count string
-                        val cases = stateInfo.second.toString() + " Case Count: " + caseNumber
+                        val cases = stateInfo.second.toString() + CASE_COUNT_STR + caseNumber
 
                         // Post case value to case count
                         caseCount?.postValue(cases)
@@ -276,6 +277,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         private const val TAG = "HomeViewModel"
         const val USER_HISTORY_LIMIT = 50
         const val RECORDING_TIME_LIMIT = 0
+        const val CASE_COUNT_STR = " Case Count: "
     }
 
 }

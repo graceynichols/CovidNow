@@ -49,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,7 +140,7 @@ public class HomeFragment extends Fragment {
                 // Location is ready to be passed to news api
                 mViewModel.getLocationAsLocation(newLocation);
                 // TODO Uncomment this when I wanna make news calls
-                //mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
+                mViewModel.getCovidNews(newLocation, getString(R.string.covid_news_key));
             }
         };
 

@@ -20,6 +20,7 @@ import okhttp3.Headers
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.NumberFormat
 import java.util.*
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -143,10 +144,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     Log.i(TAG, "News Response: $json")
                     try {
+                        val caseNumber =  NumberFormat.getInstance().format(Integer.parseInt(json.jsonObject.getJSONObject("stats")
+                                .getString("totalConfirmedCases")))
+
                         // Format the state/province + case count string
-                        val cases = stateInfo.second.toString() + " Case Count: " +
-                                json.jsonObject.getJSONObject("stats")
-                                        .getString("totalConfirmedCases")
+                        val cases = stateInfo.second.toString() + " Case Count: " + caseNumber
+
                         // Post case value to case count
                         caseCount?.postValue(cases)
                     } catch (e: JSONException) {

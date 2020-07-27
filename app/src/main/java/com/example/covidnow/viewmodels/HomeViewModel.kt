@@ -238,7 +238,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         // State or province name
         var stateName = ""
         // Retrieve this location's formatted address
+        Log.i(TAG, "res" + location.toString())
         val components = (location.getJSONArray("results")[0] as JSONObject).getJSONArray("address_components")
+
         for (i in 0 until components.length()) {
             // Search through components for state/province and country
             val element = components[i] as JSONObject

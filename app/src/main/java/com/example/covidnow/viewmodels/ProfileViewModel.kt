@@ -8,8 +8,10 @@ import com.example.covidnow.models.Messages
 import com.example.covidnow.repository.ParseRepository
 import com.parse.GetCallback
 import com.parse.ParseUser
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
+import org.parceler.Parcel
 import java.util.*
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {

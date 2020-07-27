@@ -21,6 +21,7 @@ import com.example.covidnow.adapter.HistoryAdapter
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.parse.ParseUser
+import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 
 class ProfileFragment : Fragment() {
@@ -97,17 +98,15 @@ class ProfileFragment : Fragment() {
 
         // If someone hits the "I have COVID-19" button
         btnCovid?.setOnClickListener(View.OnClickListener { view ->
-            val myOnClickListener = View.OnClickListener {
-                // Trace people who overlapped with this person's location history
-                mViewModel?.contactTracing()
-                Toast.makeText(context, "People you may have had contact with have been notified", Toast.LENGTH_SHORT).show()
-            }
-            // Snackbar - user must confirm they have covid before contact tracing begins
-            Snackbar.make(view, "Are you sure you are positive for COVID-19?", Snackbar.LENGTH_LONG)
-                    .setAction("Yes", myOnClickListener)
-                    .show()
+            // Start compose review fragment
+            showAlertDialog();
         })
 
+    }
+
+    private fun showAlertDialog() {
+        val alertDialog: CovidAlertDialogueFragment = CovidAlertDialogueFragment.newInstance("Users who you may have exposed will be notified", mViewModel)
+        fragmentManager?.let { alertDialog.show(it, "fragment_alert") };
     }
 
     companion object {

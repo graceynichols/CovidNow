@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-internal class HistoryAdapter(private val fragment: Fragment, private val exposures: MutableList<JSONObject>) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
+class HistoryAdapter(private val fragment: Fragment, private val exposures: MutableList<JSONObject>) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
     public val context = fragment.context
     private var mRecentlyDeletedItem: JSONObject? = null
     private var mRecentlyDeletedItemPosition: Int? = null

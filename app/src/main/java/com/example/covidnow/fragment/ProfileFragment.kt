@@ -12,17 +12,19 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.activity.LoginActivity
 import com.example.covidnow.adapter.HistoryAdapter
+import com.example.covidnow.helpers.SwipeToDeleteCallback
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.parse.ParseUser
-import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
+
 
 class ProfileFragment : Fragment() {
     private var tvUsername: TextView? = null
@@ -67,6 +69,10 @@ class ProfileFragment : Fragment() {
         // Add lines between recycler view
         val itemDecoration: ItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
         rvHistory?.addItemDecoration(itemDecoration)
+
+        // Set up item delete swipe listener
+        val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+        itemTouchHelper.attachToRecyclerView(rvHistory)
 
         // Get this user's exposure messages for rvHistory
         mViewModel?.getMessages()?.let { adapter?.addAll(it) }

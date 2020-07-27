@@ -65,12 +65,12 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="387dp"
         android:layout_below="@+id/btnSearch"
         android:layout_alignParentStart="false"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="0dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="221dp"
         android:layout_marginBottom="0dp"
         android:visibility="gone"
         app:cardCornerRadius="10dp"
@@ -84,5 +84,19 @@
             android:layout_alignParentStart="false"
             android:layout_alignParentBottom="true"
             android:background="@android:color/white" />
+
     </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/ivArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/baseline_arrow_upward_black_18dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
 </RelativeLayout>

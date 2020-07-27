@@ -25,6 +25,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.covidnow.adapter.PlacesAdapter;
@@ -70,6 +71,7 @@ public class MapsFragment extends Fragment {
     private FloatingActionButton btnQuickReview;
     private CardView card;
     private RecyclerView rvPlaces;
+    private ImageView ivArrow;
     private final static String KEY_LOCATION = "location";
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
@@ -132,6 +134,7 @@ public class MapsFragment extends Fragment {
         rvPlaces = view.findViewById(R.id.rvPlaces);
         card = view.findViewById(R.id.card);
         btnQuickReview = view.findViewById(R.id.btnQuickReview);
+        ivArrow = view.findViewById(R.id.ivArrow);
 
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
@@ -149,16 +152,12 @@ public class MapsFragment extends Fragment {
         rvPlaces.setOnFlingListener(new RecyclerViewSwipeListener(true) {
             @Override
             public void onSwipeDown() {
-                card.startAnimation(AnimationUtils.loadAnimation(getContext(),
-                        R.anim.slide_down));
-                card.setVisibility(GONE);
+                hidePlaces();
             }
 
             @Override
             public void onSwipeUp() {
-                card.startAnimation(AnimationUtils.loadAnimation(getContext(),
-                        R.anim.slide_up));
-                card.setVisibility(View.VISIBLE);
+                showPlaces();
             }
         });
 
@@ -208,13 +207,19 @@ public class MapsFragment extends Fragment {
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
                             // Make places list slide up
-                            card.startAnimation(AnimationUtils.loadAnimation(getContext(),
-                                    R.anim.slide_up));
-                            card.setVisibility(View.VISIBLE);
+                            showPlaces();
                         }
                     };
                     mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);
                 }
+            }
+        });
+
+        // Listen for arrow button to show rvPlaces
+        ivArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPlaces();
             }
         });
 
@@ -246,6 +251,21 @@ public class MapsFragment extends Fragment {
         mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
     }
 
+    private void showPlaces() {
+        // Show rvPlaces with animation
+        card.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                R.anim.slide_up));
+        card.setVisibility(View.VISIBLE);
+        ivArrow.setVisibility(GONE);
+    }
+
+    private void hidePlaces() {
+        // Hide rvPlaces with animation
+        card.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                R.anim.slide_down));
+        card.setVisibility(GONE);
+        ivArrow.setVisibility(View.VISIBLE);
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

@@ -2,6 +2,7 @@ package com.example.covidnow.fragment;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.util.Pair;
@@ -9,12 +10,16 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -118,6 +123,7 @@ public class MapsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_maps, container, false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -138,8 +144,6 @@ public class MapsFragment extends Fragment {
         // Set view model
         mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
 
-
-
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
         adapter = new PlacesAdapter(fragment, adapterPlaces);
@@ -153,6 +157,41 @@ public class MapsFragment extends Fragment {
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         rvPlaces.addItemDecoration(itemDecoration);
 
+        // Initialize swipe for details on rvPlaces
+        ItemTouchHelper.SimpleCallback touchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            private final ColorDrawable background = new ColorDrawable(getResources().getColor(R.color.light_blue));
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                adapter.goToDetails(viewHolder.getAdapterPosition());
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+                View itemView = viewHolder.itemView;
+
+                if (dX > 0) {
+                    background.setBounds(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + ((int) dX), itemView.getBottom());
+                } else if (dX < 0) {
+                    background.setBounds(itemView.getRight() + ((int) dX), itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                } else {
+                    background.setBounds(0, 0, 0, 0);
+                }
+
+                background.draw(c);
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(rvPlaces);
+
+        // Swipe up to show places, swipe down to hide
         rvPlaces.setOnFlingListener(new RecyclerViewSwipeListener(true) {
             @Override
             public void onSwipeDown() {
@@ -264,17 +303,17 @@ public class MapsFragment extends Fragment {
 
     private void showPlaces() {
         // Show rvPlaces with animation
+        card.setVisibility(View.VISIBLE);
         card.startAnimation(AnimationUtils.loadAnimation(getContext(),
                 R.anim.slide_up));
-        card.setVisibility(View.VISIBLE);
         ivArrow.setVisibility(GONE);
     }
 
     private void hidePlaces() {
         // Hide rvPlaces with animation
+        card.setVisibility(GONE);
         card.startAnimation(AnimationUtils.loadAnimation(getContext(),
                 R.anim.slide_down));
-        card.setVisibility(GONE);
         ivArrow.setVisibility(View.VISIBLE);
     }
     @Override

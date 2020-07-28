@@ -34,14 +34,8 @@ class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Locat
                 ivHotspot.visibility = View.GONE
             }
             itemView.setOnClickListener {
-                Log.i(TAG, "Location clicked! Opening details view")
-                val result = Bundle()
-                result.putParcelable("location", Parcels.wrap(location))
-                // Start article details fragment
-                val newFrag: Fragment = LocationDetailsFragment()
-                newFrag.arguments = result
-                fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
-                        newFrag)?.addToBackStack("MapsFragment")?.commit()
+                Log.i(TAG, "Location clicked! Placing marker")
+
             }
         }
     }
@@ -58,6 +52,17 @@ class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Locat
 
     override fun getItemCount(): Int {
         return locations.size
+    }
+
+    fun goToDetails(position: Int) {
+        val result = Bundle()
+        // Get location at this position
+        result.putParcelable("location", Parcels.wrap(locations[position]))
+        // Start location details fragment
+        val newFrag: Fragment = LocationDetailsFragment()
+        newFrag.arguments = result
+        fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
+                newFrag)?.addToBackStack("MapsFragment")?.commit()
     }
 
     // Clean all elements of the recycler

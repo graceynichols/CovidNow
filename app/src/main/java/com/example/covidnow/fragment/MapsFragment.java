@@ -22,11 +22,13 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.view.animation.BounceInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -53,6 +55,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -320,14 +323,11 @@ public class MapsFragment extends Fragment {
     public void addMarker(com.example.covidnow.models.Location location) {
         // Add marker at current location
         final LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
-        BitmapDescriptor defaultMarker =
-                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
-        map.addMarker(new MarkerOptions()
-                .position(point)
-                .title(location.getName())
-                .icon(defaultMarker));
+
+        Marker marker = map.addMarker(mViewModel.createMarker(point, location));
         // Move camera to new marker
         moveCameraToLatLng(point);
+        mViewModel.dropPinEffect(marker);
     }
 
     private void hidePlaces() {

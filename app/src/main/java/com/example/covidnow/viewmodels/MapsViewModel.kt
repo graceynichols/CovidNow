@@ -1,7 +1,11 @@
 package com.example.covidnow.viewmodels
 
 import android.app.Application
+import android.os.Handler
+import android.os.SystemClock
 import android.util.Log
+import android.view.animation.BounceInterpolator
+import android.view.animation.Interpolator
 import androidx.core.util.Pair
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -12,12 +16,17 @@ import com.example.covidnow.models.Location.Companion.fromJson
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.repository.PlacesRepository
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.parse.GetCallback
 import okhttp3.Headers
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
+import kotlin.math.max
 
 class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private var nearbyPlacesList: MutableLiveData<List<Location>>? = null
@@ -156,6 +165,43 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
             nearbyPlacesJson = MutableLiveData()
         }
         return nearbyPlacesJson as MutableLiveData<JSONArray>
+    }
+
+    fun createMarker(point: LatLng, newLocation: Location): MarkerOptions {
+        val defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+        return MarkerOptions()
+                .position(point)
+                .title(newLocation.name)
+                .icon(defaultMarker)
+    }
+
+    fun dropPinEffect(marker: Marker) {
+        // Handler allows us to repeat a code block after a specified delay
+        val handler = Handler()
+        val start = SystemClock.uptimeMillis()
+        val duration: Long = 1500
+
+        // Use the bounce interpolator
+        val interpolator: Interpolator = BounceInterpolator()
+
+        // Animate marker with a bounce updating its position every 15ms
+        handler.post(object : Runnable {
+            override fun run() {
+                val elapsed = SystemClock.uptimeMillis() - start
+                // Calculate t for bounce based on elapsed time
+                val t = max(
+                        1 - interpolator.getInterpolation(elapsed.toFloat()
+                                / duration), 0f)
+                // Set the anchor
+                marker.setAnchor(0.5f, 1.0f + 14 * t)
+                if (t > 0.0) {
+                    // Post this event again 15ms from now.
+                    handler.postDelayed(this, 15)
+                } else { // done elapsing, show window
+                    marker.showInfoWindow()
+                }
+            }
+        })
     }
 
     companion object {

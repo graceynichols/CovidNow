@@ -58,6 +58,11 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
         return articles.size
     }
 
+    fun addAll(news: List<Article>) {
+        articles.addAll(news)
+        notifyDataSetChanged()
+    }
+
     companion object {
         private const val TAG = "ArticlesAdapter"
     }

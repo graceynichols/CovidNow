@@ -11,17 +11,28 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.covidnow.R;
 import com.example.covidnow.activity.MainActivity;
+import com.example.covidnow.repository.GeocodingRepository;
+import com.example.covidnow.repository.ParseRepository;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+
+import org.json.JSONException;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
+import okhttp3.Headers;
+
 public class Utils {
+    private final static String TAG = "Utils";
     public final static String KEY_LOCATION_UPDATES_REQUESTED = "location-updates-requested";
     public final static String KEY_LOCATION_UPDATES_RESULT = "location-update-result";
     final static String CHANNEL_ID = "channel_01";
@@ -100,19 +111,6 @@ public class Utils {
         mNotificationManager.notify(0, builder.build());
     }
 
-
-    /**
-     * Returns the title for reporting about a list of {@link Location} objects.
-     *
-     * @param context The {@link Context}.
-     */
-    public static String getLocationResultTitle(Context context, List<Location> locations) {
-        //String numLocationsReported = context.getResources().getQuantityString(
-                //R.plurals.num_locations_reported, locations.size(), locations.size());
-        return "";
-                //numLocationsReported + ": " + DateFormat.getDateTimeInstance().format(new Date());
-    }
-
     /**
      * Returns te text for reporting about a list of  {@link Location} objects.
      *
@@ -120,9 +118,7 @@ public class Utils {
      */
     private static String getLocationResultText(Context context, List<Location> locations) {
         if (locations.isEmpty()) {
-            //return context.getString("idk");
-            //TODO
-            return "idk";
+            return "";
         }
         StringBuilder sb = new StringBuilder();
         for (Location location : locations) {
@@ -133,15 +129,17 @@ public class Utils {
             sb.append(")");
             sb.append("\n");
         }
+        Log.i(TAG, sb.toString());
         return sb.toString();
     }
 
-    public static void setLocationUpdatesResult(Context context, List<Location> locations) {
+    public static void setLocationUpdatesResult(final Context context, final List<Location> locations) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putString(KEY_LOCATION_UPDATES_RESULT, getLocationResultTitle(context, locations)
+                .putString(KEY_LOCATION_UPDATES_RESULT, "Location Results:"
                         + "\n" + getLocationResultText(context, locations))
                 .apply();
+
     }
 
     public static String getLocationUpdatesResult(Context context) {

@@ -49,7 +49,8 @@ public class LocationUpdatesIntentService extends IntentService {
                 if (result != null) {
                     List<Location> locations = result.getLocations();
                     setLocationUpdatesResult(this, locations);
-                    sendNotification(this, getLocationResultTitle(this, locations));
+                    // TODO
+                    sendNotification(this, "TODO");
                     Log.i(TAG, getLocationUpdatesResult(this));
                 }
             }

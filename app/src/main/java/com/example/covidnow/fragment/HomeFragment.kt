@@ -56,9 +56,9 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val REQUEST_CODE_LOCATION = 100
     private var mFusedLocationClient: FusedLocationProviderClient? = null
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
-    private val UPDATE_INTERVAL: Long = 6000 // Every 6 seconds.
-    private val FASTEST_UPDATE_INTERVAL: Long = 3000 // Every 30 seconds
-    private val MAX_WAIT_TIME = UPDATE_INTERVAL * 1 // Every 5 minutes.
+    private val UPDATE_INTERVAL: Long = 60000 // Every 60 seconds.
+    private val FASTEST_UPDATE_INTERVAL: Long = 30000 // Every 30 seconds
+    private val MAX_WAIT_TIME = UPDATE_INTERVAL * 5 // Every 5 minutes.
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)

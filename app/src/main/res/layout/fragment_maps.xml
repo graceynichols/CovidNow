@@ -26,7 +26,7 @@
         android:layout_marginStart="31dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/baseline_edit_white_18dp"
+        android:src="@drawable/baseline_add_location_alt_white_18dp"
         app:fabSize="normal" />
 
     <fragment

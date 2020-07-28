@@ -26,6 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.covidnow.adapter.PlacesAdapter;
@@ -79,6 +80,7 @@ public class MapsFragment extends Fragment {
     private static List<com.example.covidnow.models.Location> adapterPlaces = new ArrayList<>();
     private static PlacesAdapter adapter;
     private Pair<Double, Double> coordinates;
+    private ProgressBar pbLoading;
     private Location mCurrentLocation;
     private GoogleMap map;
     private MapsViewModel mViewModel;
@@ -119,6 +121,13 @@ public class MapsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        pbLoading = view.findViewById(R.id.pbLoading);
+        etSearch = view.findViewById(R.id.etSearch);
+        btnSearch = view.findViewById(R.id.btnSearch);
+        rvPlaces = view.findViewById(R.id.rvPlaces);
+        card = view.findViewById(R.id.card);
+        btnQuickReview = view.findViewById(R.id.btnQuickReview);
+        ivArrow = view.findViewById(R.id.ivArrow);
 
         if (savedInstanceState != null && savedInstanceState.keySet().contains(KEY_LOCATION)) {
             // Since KEY_LOCATION was found in the Bundle, we can be sure that mCurrentLocation
@@ -129,12 +138,7 @@ public class MapsFragment extends Fragment {
         // Set view model
         mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
 
-        etSearch = view.findViewById(R.id.etSearch);
-        btnSearch = view.findViewById(R.id.btnSearch);
-        rvPlaces = view.findViewById(R.id.rvPlaces);
-        card = view.findViewById(R.id.card);
-        btnQuickReview = view.findViewById(R.id.btnQuickReview);
-        ivArrow = view.findViewById(R.id.ivArrow);
+
 
         // Initialize adapter
         adapterPlaces = new ArrayList<>();
@@ -173,10 +177,14 @@ public class MapsFragment extends Fragment {
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Show progress bar
+                pbLoading.setVisibility(View.VISIBLE);
+
                 String search = etSearch.getText().toString();
                 // Automatically put keyboard away
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
@@ -206,6 +214,9 @@ public class MapsFragment extends Fragment {
                             // List of places ready to be given to recyclerview
                             Log.i(TAG, "Places list received from ParseRepo");
                             adapter.addAll(newPlaces);
+                            // Hide progress bar
+                            pbLoading.setVisibility(View.GONE);
+
                             // Make places list slide up
                             showPlaces();
                         }

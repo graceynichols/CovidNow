@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -34,6 +35,7 @@ class ProfileFragment : Fragment() {
     private var btnCovid: Button? = null
     private var mViewModel: ProfileViewModel? = null
     private var adapterHistory: List<JSONObject>?  = null
+    private var pbLoading: ProgressBar? = null
     private var adapter: HistoryAdapter?  = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -50,9 +52,11 @@ class ProfileFragment : Fragment() {
         btnLogout = view.findViewById(R.id.btnLogout)
         btnCovid = view.findViewById(R.id.btnCovid)
         rvHistory = view.findViewById(R.id.rvHistory)
+        pbLoading = view.findViewById(R.id.pbLoading)
 
-        // Set review number
-        val reviews = "" + mViewModel?.getNumReviews(ParseUser.getCurrentUser())
+        // Show progress bar
+        pbLoading?.visibility = View.VISIBLE
+
         tvUsername?.text = ParseUser.getCurrentUser().username
 
         // Set up location history adapter
@@ -73,6 +77,9 @@ class ProfileFragment : Fragment() {
 
         // Get this user's exposure messages for rvHistory
         mViewModel?.getMessages()?.let { adapter?.addAll(it) }
+
+        // Hide progress bar
+        pbLoading?.visibility = View.GONE
 
         // Listen for logout button
         btnLogout?.setOnClickListener(View.OnClickListener { view ->

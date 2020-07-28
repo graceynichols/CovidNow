@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -22,6 +23,7 @@ class LocationDetailsFragment : Fragment() {
     private var tvAddress: TextView? = null
     private var tvHotspotDate: TextView? = null
     private var btnEdit: FloatingActionButton? = null
+    private var pbLoading: ProgressBar? = null
     private var ivHotspot: ImageView? = null
     private var ivImage: ImageView? = null
 
@@ -43,6 +45,10 @@ class LocationDetailsFragment : Fragment() {
         btnEdit = view.findViewById(R.id.btnEdit)
         ivHotspot = view.findViewById(R.id.ivHotspot)
         ivImage = view.findViewById(R.id.ivImage)
+        pbLoading = view.findViewById(R.id.pbLoading)
+
+        // Show progress bar
+        pbLoading?.visibility = View.VISIBLE
 
         // Set text information
         if (location?.name == null) {
@@ -68,6 +74,10 @@ class LocationDetailsFragment : Fragment() {
         } else {
             Log.i(TAG, "Location has no picture")
         }
+
+        // Hide progress bar
+        pbLoading?.visibility = View.GONE
+
         // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
             Log.i(TAG, "Edit button clicked!")

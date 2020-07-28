@@ -18,6 +18,17 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="200dp"
+        android:elevation="2dp"
+        android:visibility="invisible"
+        tools:visibility="visible" />
+
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"

@@ -13,6 +13,7 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.NewsRepository
 import com.example.covidnow.repository.ParseRepository
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.parse.GetCallback
 import com.parse.ParseUser
 import com.parse.SaveCallback
@@ -188,6 +189,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             })
             }
+        }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    //@NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    fun getMyLocation(locationClient: FusedLocationProviderClient?, apiKey: String) {
+        Log.i(TAG, "In getMyLocation")
+        locationClient?.lastLocation
+                ?.addOnSuccessListener { location ->
+                    onLocationChanged(location, apiKey)
+                }
+                ?.addOnFailureListener { e ->
+                    Log.e(TAG, "Exception", e)
+                }
+    }
+
+    private fun onLocationChanged(location: android.location.Location, apiKey: String) {
+        // GPS may be turned off
+        if (location == null) {
+            Log.i(TAG, "Error, Location is NULL")
+            return
+        } else {
+            getAddress(apiKey, Pair.create(location.latitude, location.longitude))
         }
     }
 

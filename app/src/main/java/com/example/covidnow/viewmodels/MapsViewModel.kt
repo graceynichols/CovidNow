@@ -1,11 +1,14 @@
 package com.example.covidnow.viewmodels
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.SystemClock
 import android.util.Log
 import android.view.animation.BounceInterpolator
 import android.view.animation.Interpolator
+import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -16,6 +19,7 @@ import com.example.covidnow.models.Location.Companion.fromJson
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.repository.PlacesRepository
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -25,6 +29,7 @@ import okhttp3.Headers
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import permissions.dispatcher.NeedsPermission
 import java.util.*
 import kotlin.math.max
 
@@ -32,10 +37,11 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private var nearbyPlacesList: MutableLiveData<List<Location>>? = null
     private var nearbyPlacesJson: MutableLiveData<JSONArray>? = null
     private var finalLocation: MutableLiveData<Location>? = null
+    private var coordinates: MutableLiveData<Pair<Double, Double>>? = null
     private val placesRepository: PlacesRepository = PlacesRepository()
     private val parseRepository: ParseRepository = ParseRepository()
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
-    fun getPlaces(newCoords: Pair<Double?, Double?>, search: String?, apiKey: String?) {
+    fun getPlaces(newCoords: Pair<Double, Double>, search: String?, apiKey: String?) {
         // Listen for coordinates from MapsFragment
         Log.i(TAG, "Coordinates received from MapsFragment")
         search?.let {
@@ -101,7 +107,33 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getCurrentLocation(apiKey: String?, newCoords: Pair<Double?, Double?>) {
+    @SuppressLint("MissingPermission")
+    fun getMyLocation(locationClient: FusedLocationProviderClient?, apiKey: String) {
+        Log.i(TAG, "In getMyLocation")
+
+        locationClient?.lastLocation
+                ?.addOnSuccessListener { location ->
+                    onLocationChanged(location, apiKey)
+                }
+                ?.addOnFailureListener { e ->
+                    Log.e(TAG, "Exception", e)
+                }
+    }
+
+    private fun onLocationChanged(location: android.location.Location, apiKey: String) {
+        // GPS may be turned off
+        if (location == null) {
+            Log.i(TAG, "Error, Location is NULL")
+            return
+        } else {
+            val coords = Pair.create(location.latitude, location.longitude)
+            Log.i(TAG, "Coordinates are " + coords.first + " " + coords.second)
+            coordinates?.postValue(coords)
+            getCurrentLocation(apiKey, coords)
+        }
+    }
+
+    private fun getCurrentLocation(apiKey: String?, newCoords: Pair<Double?, Double?>) {
         // Retrieve location JSON from GeocodingRepo
         newCoords.first?.let {
             newCoords.second?.let { it1 ->
@@ -123,7 +155,7 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getLocationAsLocation(currentLocation: JSONObject) {
+    private fun getLocationAsLocation(currentLocation: JSONObject) {
         val jsonLocation = currentLocation.getJSONArray("results")[0] as JSONObject
         val placeId = (jsonLocation).getString("place_id")
         // Search if this place has been saved
@@ -165,6 +197,13 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
             nearbyPlacesJson = MutableLiveData()
         }
         return nearbyPlacesJson as MutableLiveData<JSONArray>
+    }
+
+    fun getCoordinates(): LiveData<Pair<Double, Double>> {
+        if (coordinates == null) {
+            coordinates = MutableLiveData()
+        }
+        return coordinates as MutableLiveData<Pair<Double, Double>>
     }
 
     fun createMarker(point: LatLng, newLocation: Location): MarkerOptions {

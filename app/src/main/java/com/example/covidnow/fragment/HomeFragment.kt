@@ -1,9 +1,13 @@
 package com.example.covidnow.fragment
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +16,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -22,9 +25,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
+import com.example.covidnow.helpers.LocationUpdatesBroadcastReceiver
+import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -33,29 +39,31 @@ import com.parse.SaveCallback
 import org.json.JSONObject
 import org.parceler.Parcels
 import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.RuntimePermissions
 import java.util.*
 
-class HomeFragment : Fragment() {
+
+class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
     private var rvArticles: RecyclerView? = null
+    private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
     private var btnQuickReview: FloatingActionButton? = null
     private var pbLoading: ProgressBar? = null
     private var mViewModel: HomeViewModel? = null
     private val permissionFineLocation= Manifest.permission.ACCESS_FINE_LOCATION
+    private val permissionBackgroundLocation= Manifest.permission.ACCESS_BACKGROUND_LOCATION
     private val permissionCoarseLocation= Manifest.permission.ACCESS_COARSE_LOCATION
     private val REQUEST_CODE_LOCATION = 100
+    private var mFusedLocationClient: FusedLocationProviderClient? = null
+    private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
+    private val UPDATE_INTERVAL: Long = 6000 // Every 6 seconds.
+    private val FASTEST_UPDATE_INTERVAL: Long = 3000 // Every 30 seconds
+    private val MAX_WAIT_TIME = UPDATE_INTERVAL * 1 // Every 5 minutes.
 
-    // The onCreateView method is called when Fragment should create its View object hierarchy,
-    // either dynamically or via XML layout inflation.
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)
     }
 
-    // This event is triggered soon after onCreateView().
-    // onViewCreated() is only called if the view returned from onCreateView() is non-null.
-    // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -83,7 +91,9 @@ class HomeFragment : Fragment() {
         }
         else{
             requestPermissions()
+            getMyLocation()
         }
+
 
         // Make sure user has a messages object
         if (ParseUser.getCurrentUser()[ParseRepository.KEY_MESSAGES] == null) {
@@ -133,6 +143,22 @@ class HomeFragment : Fragment() {
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
     }
 
+    override fun onStart() {
+        super.onStart()
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .registerOnSharedPreferenceChangeListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    override fun onStop() {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .unregisterOnSharedPreferenceChangeListener(this)
+        super.onStop()
+    }
+
     private fun goQuickReview() {
         // Start compose review fragment
         val newFrag: Fragment = ComposeReviewFragment()
@@ -160,14 +186,46 @@ class HomeFragment : Fragment() {
         rvArticles?.addItemDecoration(itemDecoration)
     }
 
-    @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    @SuppressLint("MissingPermission")
+    @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     fun getMyLocation() {
         Log.i(TAG, "Getting user's current location ")
-        val locationClient = activity?.applicationContext?.let { LocationServices.getFusedLocationProviderClient(it) }
-        Log.i(TAG, "LOCATION CLIENT $locationClient")
-        mViewModel?.getMyLocation(locationClient, getString(R.string.google_maps_key))
-
+        val mFusedLocationClient = activity?.applicationContext?.let { LocationServices.getFusedLocationProviderClient(it) }
+        Log.i(TAG, "LOCATION CLIENT $mFusedLocationClient")
+        mViewModel?.getMyLocation(mFusedLocationClient, getString(R.string.google_maps_key))
+        createLocationRequest()
+        mFusedLocationClient?.let { requestLocationUpdates(it) }
     }
+
+    private fun createLocationRequest() {
+        mLocationRequest = LocationRequest()
+        // Sets the desired interval for active location updates.
+        mLocationRequest?.interval = UPDATE_INTERVAL
+        // Sets the fastest rate for active location updates.
+        mLocationRequest?.fastestInterval = FASTEST_UPDATE_INTERVAL
+        mLocationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        // Sets the maximum time when batched location updates are delivered.
+        mLocationRequest?.maxWaitTime = MAX_WAIT_TIME
+    }
+
+    private fun getPendingIntent(): PendingIntent? {
+        Log.i(TAG, "Creating pending intent")
+        val intent = Intent(context, LocationUpdatesBroadcastReceiver::class.java)
+        intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun requestLocationUpdates(locationClient: FusedLocationProviderClient) {
+        try {
+            Log.i(TAG, "Starting location updates")
+            Utils.setRequestingLocationUpdates(context, true)
+            locationClient.requestLocationUpdates(mLocationRequest, getPendingIntent())
+        } catch (e: SecurityException) {
+            Utils.setRequestingLocationUpdates(context, false)
+            e.printStackTrace()
+        }
+    }
+
 
     private fun requestPermissions(){
         val contextProvider: Boolean? = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, permissionFineLocation) }
@@ -180,14 +238,22 @@ class HomeFragment : Fragment() {
         }
 
     }
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, s: String) {
+        if (s == Utils.KEY_LOCATION_UPDATES_RESULT) {
+            //mLocationUpdatesResultView!!.text = Utils.getLocationUpdatesResult(this)
+        } else if (s == Utils.KEY_LOCATION_UPDATES_REQUESTED) {
+            //updateButtonsState(Utils.getRequestingLocationUpdates(this))
+        }
+    }
+
     private fun permissionRequest(){
-        activity?.let { ActivityCompat.requestPermissions(it, arrayOf(permissionFineLocation, permissionCoarseLocation), REQUEST_CODE_LOCATION) }
+        activity?.let { ActivityCompat.requestPermissions(it, arrayOf(permissionFineLocation, permissionCoarseLocation, permissionBackgroundLocation), REQUEST_CODE_LOCATION) }
     }
     private fun validatePermissionsLocation():Boolean{
         val fineLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionFineLocation) } == PackageManager.PERMISSION_GRANTED
         val coarseLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionCoarseLocation) } ==PackageManager.PERMISSION_GRANTED
-
-        return fineLocationAvailable && coarseLocationAvailable
+        val backgroundLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionBackgroundLocation) } ==PackageManager.PERMISSION_GRANTED
+        return fineLocationAvailable && coarseLocationAvailable && backgroundLocationAvailable
     }
 
     companion object {

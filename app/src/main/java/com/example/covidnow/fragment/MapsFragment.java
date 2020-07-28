@@ -223,18 +223,22 @@ public class MapsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 // Show progress bar
-                pbLoading.setVisibility(View.VISIBLE);
+
 
                 // Get user's query
                 String search = etSearch.getText().toString();
-
-                // Automatically put keyboard away
-                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
-                mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                // Clear search box
+                etSearch.setText("");
 
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
+                    // Automatically put keyboard away
+                    InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+                    mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+
+                    // Show progress bar
+                    pbLoading.setVisibility(View.VISIBLE);
                     // Retrieve current location
                     if (coordinates == null) {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();

@@ -12,10 +12,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.covidnow.R
 import com.example.covidnow.fragment.LocationDetailsFragment
+import com.example.covidnow.fragment.MapsFragment
 import com.example.covidnow.models.Location
 import org.parceler.Parcels
 
-class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Location>) : RecyclerView.Adapter<PlacesAdapter.ViewHolder>() {
+class PlacesAdapter(private val fragment: MapsFragment, locations: MutableList<Location>) : RecyclerView.Adapter<PlacesAdapter.ViewHolder>() {
     private val context: Context? = fragment.context
     private var locations: MutableList<Location> = locations
 
@@ -35,7 +36,7 @@ class PlacesAdapter(private val fragment: Fragment, locations: MutableList<Locat
             }
             itemView.setOnClickListener {
                 Log.i(TAG, "Location clicked! Placing marker")
-
+                fragment.addMarker(location)
             }
         }
     }

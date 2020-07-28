@@ -50,7 +50,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -309,6 +312,19 @@ public class MapsFragment extends Fragment {
         ivArrow.setVisibility(GONE);
     }
 
+    public void addMarker(com.example.covidnow.models.Location location) {
+        // Add marker at current location
+        final LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
+        BitmapDescriptor defaultMarker =
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+        map.addMarker(new MarkerOptions()
+                .position(point)
+                .title(location.getName())
+                .icon(defaultMarker));
+        // Move camera to new marker
+        moveCameraToLatLng(point);
+    }
+
     private void hidePlaces() {
         // Hide rvPlaces with animation
         card.setVisibility(GONE);
@@ -367,6 +383,13 @@ public class MapsFragment extends Fragment {
         // Set camera to user's current location
         LatLng currLocationLatLng = new LatLng(x, y);
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currLocationLatLng, 17);
+        map.animateCamera(cameraUpdate);
+
+    }
+
+    private void moveCameraToLatLng(LatLng point) {
+        // Set camera to this point
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(point, 17);
         map.animateCamera(cameraUpdate);
 
     }

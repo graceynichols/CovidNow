@@ -28,7 +28,6 @@ import org.json.JSONObject
 
 class ProfileFragment : Fragment() {
     private var tvUsername: TextView? = null
-    private var tvReviewCount: TextView? = null
     // RecyclerView showing exposure history
     private var rvHistory: RecyclerView? = null
     private var btnLogout: Button? = null
@@ -48,14 +47,12 @@ class ProfileFragment : Fragment() {
         // Set up ProfileViewModel
         mViewModel = ViewModelProviders.of(this).get(ProfileViewModel::class.java)
         tvUsername = view.findViewById(R.id.tvUsername)
-        tvReviewCount = view.findViewById(R.id.tvReviewCount)
         btnLogout = view.findViewById(R.id.btnLogout)
         btnCovid = view.findViewById(R.id.btnCovid)
         rvHistory = view.findViewById(R.id.rvHistory)
 
         // Set review number
         val reviews = "" + mViewModel?.getNumReviews(ParseUser.getCurrentUser())
-        tvReviewCount?.text = reviews
         tvUsername?.text = ParseUser.getCurrentUser().username
 
         // Set up location history adapter

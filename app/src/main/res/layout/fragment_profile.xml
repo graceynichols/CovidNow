@@ -3,100 +3,96 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
     tools:context=".fragment.ProfileFragment">
 
     <TextView
         android:id="@+id/tvUsername"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/light_blue"
+        android:fontFamily="serif"
+        android:padding="8dp"
         android:text="@string/username"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textAlignment="center"
+        android:textColor="@color/common_google_signin_btn_text_dark_default"
+        android:textSize="24sp"
         android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvReview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvUsername"
-        android:layout_marginTop="5dp"
-
-        android:text="@string/reviews"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvReviewCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/tvReview"
-        android:layout_marginStart="2dp"
-        android:layout_marginTop="0dp"
-        android:layout_toEndOf="@+id/tvReview"
-        tools:text="numReviews" />
 
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_below="@+id/btnCovid"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_marginTop="5dp"
-        android:backgroundTint="@color/light_blue"
+        android:layout_marginEnd="10dp"
+        android:backgroundTint="@color/colorAccent"
         android:text="@string/logout"
-        android:textColor="@color/design_default_color_background" />
+        android:textColor="@color/design_default_color_background"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/btnResetPassword"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_below="@+id/btnLogout"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_marginTop="5dp"
-        android:backgroundTint="@color/light_blue"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:backgroundTint="@color/colorAccent"
         android:text="@string/reset_password"
-        android:textColor="@color/design_default_color_background" />
+        android:textColor="@color/design_default_color_background"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/btnCovid"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvReview"
+        android:layout_height="60dp"
+        android:layout_below="@+id/rvHistory"
         android:layout_alignParentStart="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginStart="9dp"
         android:layout_marginTop="10dp"
-        android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:backgroundTint="@color/light_blue"
+        android:backgroundTint="@color/colorAccent"
         android:text="@string/i_have_covid_19"
-        android:textColor="@color/design_default_color_on_primary" />
+        android:textColor="@color/design_default_color_on_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHistory"
         android:layout_width="match_parent"
-        android:layout_height="482dp"
+        android:layout_height="300dp"
         android:layout_below="@id/tvExposureHistory"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentEnd="false"
         android:layout_centerHorizontal="true"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="5dp" />
 
     <TextView
         android:id="@+id/tvExposureHistory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnResetPassword"
+        android:layout_below="@id/tvUsername"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="false"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
         android:text="@string/exposure_history"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textStyle="bold" />
 
 </RelativeLayout>

@@ -50,7 +50,7 @@ class ArticleDetailsFragment : Fragment() {
         // Add image if there is one
         if (article?.imageUrl != null) {
             ivImage.visibility = View.VISIBLE
-            val lp = tvSummary?.layoutParams as RelativeLayout.LayoutParams
+            val lp = tvHeadline?.layoutParams as RelativeLayout.LayoutParams
             ivImage.id.let { lp.addRule(RelativeLayout.BELOW, it) }
             Glide.with(this).load(article?.imageUrl).centerCrop().into(ivImage)
         }

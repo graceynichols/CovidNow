@@ -37,9 +37,13 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:background="#DFDCDC"
+        android:backgroundTint="@color/light_blue"
+        android:fontFamily="serif"
         android:padding="8dp"
+        android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textSize="26sp"
+        android:textColor="@color/common_google_signin_btn_text_dark_default"
+        android:textSize="24sp"
         android:textStyle="bold"
         tools:text="Atlanta Case Count: 1,000" />
 

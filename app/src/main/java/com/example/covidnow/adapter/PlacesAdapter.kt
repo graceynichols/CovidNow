@@ -73,6 +73,7 @@ class PlacesAdapter(private val fragment: MapsFragment, locations: MutableList<L
     }
 
     fun addAll(newPlaces: MutableList<Location>) {
+        // Insert locations in the front
         newPlaces.addAll(locations)
         locations = newPlaces
         notifyDataSetChanged()

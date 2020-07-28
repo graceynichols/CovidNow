@@ -222,7 +222,9 @@ public class MapsFragment extends Fragment {
                 // Show progress bar
                 pbLoading.setVisibility(View.VISIBLE);
 
+                // Get user's query
                 String search = etSearch.getText().toString();
+
                 // Automatically put keyboard away
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
@@ -230,7 +232,7 @@ public class MapsFragment extends Fragment {
                 if (search.isEmpty()) {
                     Toast.makeText(getContext(), "Must provide search query", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Locate nearby places
+                    // Retrieve current location
                     if (coordinates == null) {
                         Toast.makeText(getContext(), "Error, current location not found yet", Toast.LENGTH_SHORT).show();
                         return;
@@ -241,15 +243,14 @@ public class MapsFragment extends Fragment {
                     final Observer<JSONArray> placesJSONObserver = new Observer<JSONArray>() {
                         @Override
                         public void onChanged(@Nullable final JSONArray jArray) {
-                            // Location is ready to be passed to Places API
+                            // Places JSON received from view model
                             Log.i(TAG, "Places JSON received from PlacesRepo");
                             mViewModel.getSavedPlaces(jArray);
                         }
                     };
+                    // Listen for Places API call to finish
                     mViewModel.getNearbyPlacesJson().observe(getViewLifecycleOwner(), placesJSONObserver);
 
-
-                    // Listen for List<Location> received from ParseRepo
                     final Observer<List<com.example.covidnow.models.Location>> placesListObserver = new Observer<List<com.example.covidnow.models.Location>>() {
                         @Override
                         public void onChanged(@Nullable final List<com.example.covidnow.models.Location> newPlaces) {
@@ -258,11 +259,11 @@ public class MapsFragment extends Fragment {
                             adapter.addAll(newPlaces);
                             // Hide progress bar
                             pbLoading.setVisibility(View.GONE);
-
                             // Make places list slide up
                             showPlaces();
                         }
                     };
+                    // Listen for List<covidnow.location> of saved places received from ParseRepo
                     mViewModel.getNearbyPlacesList().observe(getViewLifecycleOwner(), placesListObserver);
                 }
             }
@@ -287,14 +288,7 @@ public class MapsFragment extends Fragment {
                     public void onClick(View view) {
                         Log.i(TAG, "Quick Review button clicked!");
                         // Location ready to be used for quick review
-                        Fragment newFrag = new ComposeReviewFragment();
-                        Bundle result = new Bundle();
-                        // Send this location to the compose fragment
-                        result.putParcelable("location", Parcels.wrap(mViewModel.getFinalLocation().getValue()));
-                        newFrag.setArguments(result);
-                        // Start compose review fragment
-                        getFragmentManager().beginTransaction().replace(R.id.flContainer,
-                                newFrag).addToBackStack("MapsFragment").commit();
+                        goQuickReview(mViewModel.getFinalLocation().getValue());
 
                     }
                 });
@@ -302,6 +296,17 @@ public class MapsFragment extends Fragment {
         };
         // Listen for location to be ready to be reviewed
         mViewModel.getFinalLocation().observe(getViewLifecycleOwner(), finalLocationObserver);
+    }
+
+    private void goQuickReview(com.example.covidnow.models.Location location) {
+        Fragment newFrag = new ComposeReviewFragment();
+        Bundle result = new Bundle();
+        // Send this location to the compose fragment
+        result.putParcelable("location", Parcels.wrap(location));
+        newFrag.setArguments(result);
+        // Start compose review fragment
+        getFragmentManager().beginTransaction().replace(R.id.flContainer,
+                newFrag).addToBackStack("MapsFragment").commit();
     }
 
     private void showPlaces() {

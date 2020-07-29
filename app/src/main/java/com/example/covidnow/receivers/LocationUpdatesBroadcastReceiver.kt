@@ -82,7 +82,18 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
         // Add this location to user's history
         newLocation.placeId?.let { parseRepository.addToUserHistory(it, SaveCallback { Log.i(TAG, "Location saved to user history") }) }
         // Add this user to location's history
-        parseRepository.addVisitorToHistory(newLocation)
+        newLocation.placeId?.let {
+            parseRepository.searchPlace(it, GetCallback { `object`, e ->
+                if (`object` != null) {
+                    // Add this visitor to previously saved location
+                    parseRepository.addVisitorToHistory(`object`)
+                } else {
+                    // Location not saved in parse, create a new one
+                    parseRepository.addVisitorToHistory(newLocation)
+                }
+        })
+        }
+
     }
 
     private fun checkIfHotspot(newLocation: com.example.covidnow.models.Location, parseRepository: ParseRepository, user: ParseUser?, context: Context) {
@@ -98,6 +109,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                         user?.let { it1 -> hotspotNotification(it1, placeId, context) }
                     }
                 } else {
+                    // Not saved, can't be a hotspot
                     Log.i(TAG, "Current location not saved in Parse")
                 }
                 // TODO check if county has a lot of cases

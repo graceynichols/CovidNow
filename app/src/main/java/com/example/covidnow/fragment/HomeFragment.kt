@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
@@ -14,7 +15,9 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -84,11 +87,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         if (validatePermissionsLocation()){
             // Permission granted
             Log.i(TAG, "Permission granted")
-        }
-        else{
+            getMyLocation()
+        } else {
             requestPermissions()
         }
-        getMyLocation()
 
         // Make sure user has a messages object
         if (ParseUser.getCurrentUser()[ParseRepository.KEY_MESSAGES] == null) {
@@ -101,7 +103,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put
@@ -181,17 +183,43 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         rvArticles?.addItemDecoration(itemDecoration)
     }
 
-    @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+
+    //@NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    @SuppressWarnings("MissingPermission")
     fun getMyLocation() {
         Log.i(TAG, "Getting user's current location ")
         val mFusedLocationClient = activity?.applicationContext?.let { LocationServices.getFusedLocationProviderClient(it) }
         Log.i(TAG, "LOCATION CLIENT $mFusedLocationClient")
-        mViewModel?.getMyLocation(mFusedLocationClient, getString(R.string.google_maps_key))
+        getLastlocation(mFusedLocationClient, getString(R.string.google_maps_key))
 
         // Only do background updates with permission
         if (validatePermissionsBackground()) {
+            Log.i(TAG, "Background permissions granted")
             createLocationRequest()
             mFusedLocationClient?.let { requestLocationUpdates(it) }
+        }
+    }
+
+    //@NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    @SuppressWarnings("MissingPermission")
+    fun getLastlocation(locationClient: FusedLocationProviderClient?, apiKey: String) {
+        Log.i(TAG, "In getMyLocation")
+        locationClient?.lastLocation
+                ?.addOnSuccessListener { location ->
+                    onLocationChanged(location, apiKey)
+                }
+                ?.addOnFailureListener { e ->
+                    Log.e(TAG, "Exception", e)
+                }
+    }
+
+    private fun onLocationChanged(location: android.location.Location, apiKey: String) {
+        // GPS may be turned off
+        if (location == null) {
+            Log.i(TAG, "Error, Location is NULL")
+            return
+        } else {
+            mViewModel?.getAddress(apiKey, Pair.create(location.latitude, location.longitude))
         }
     }
 
@@ -213,7 +241,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+
     private fun requestLocationUpdates(locationClient: FusedLocationProviderClient) {
         try {
             Log.i(TAG, "Starting location updates")
@@ -232,6 +260,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         if (contextProvider != null) {
             if(contextProvider){
                 Toast.makeText(activity?.applicationContext, "Permission is required to obtain location", Toast.LENGTH_SHORT).show()
+
             }
             permissionRequest()
         }
@@ -250,13 +279,14 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     }
     private fun validatePermissionsLocation():Boolean{
         val fineLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionFineLocation) } == PackageManager.PERMISSION_GRANTED
-        val coarseLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionCoarseLocation) } ==PackageManager.PERMISSION_GRANTED
+        //val coarseLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionCoarseLocation) } ==PackageManager.PERMISSION_GRANTED
 
-        return fineLocationAvailable && coarseLocationAvailable
+        return fineLocationAvailable
     }
 
     private fun validatePermissionsBackground():Boolean{
-        return activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionBackgroundLocation) } ==PackageManager.PERMISSION_GRANTED
+        //return false
+        return activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionBackgroundLocation) } == PackageManager.PERMISSION_GRANTED
     }
 
     companion object {

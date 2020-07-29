@@ -104,15 +104,20 @@ class Location : ParseObject() {
         fun fromGeocodingJson(json: JSONObject): Location {
             val location = Location()
             // Find the formatted address
-            location.address = json.getString("formatted_address")
+            if (json.has("formatted_address")) {
+                location.address = json.getString("formatted_address")
+            }
+
             // If it's not saved it must not be marked as a hotspot
             location.isHotspot = false
             // This place presumably doesn't have a name
             location.name = location.address
             location.placeId = json.getString("place_id")
             // Save latitude and longitude
-            location.latitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lat")
-            location.longitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lng")
+            if (json.has("geometry")) {
+                location.latitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lat")
+                location.longitude = json.getJSONObject("geometry").getJSONObject("location").getDouble("lng")
+            }
             return location
         }
     }

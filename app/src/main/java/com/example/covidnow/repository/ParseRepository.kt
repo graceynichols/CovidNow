@@ -22,7 +22,7 @@ class ParseRepository {
         val query = ParseQuery.getQuery<Location>("Location")
         query.include(Location.KEY_PLACE_ID)
         // Only get places with this place ID
-        query.whereEqualTo("place_id", placeId)
+        query.whereEqualTo(Location.KEY_PLACE_ID, placeId)
         // Only need 1 place
         query.getFirstInBackground(locationGetCallback)
     }
@@ -189,8 +189,6 @@ class ParseRepository {
         return visitorHistory
     }
 
-
-
     fun differenceInDays(currDate: Date, otherDate: Date): Int {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
     }
@@ -244,6 +242,7 @@ class ParseRepository {
         const val KEY_MESSAGES = "exposureHistory"
         const val KEY_DATE = "date"
         const val KEY_OBJECT_ID = "objectId"
+        const val KEY_CURRENT_LOCATION = "currentLocation"
         const val TIME_LIMIT = 14
         const val LOC_HISTORY_LIMIT = 50
 
@@ -253,7 +252,5 @@ class ParseRepository {
             val strDate = (jsonObject).getString("date")
             return formatter.parse(strDate) as Date
         }
-
-
     }
 }

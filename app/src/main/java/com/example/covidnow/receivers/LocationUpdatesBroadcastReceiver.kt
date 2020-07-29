@@ -46,18 +46,24 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     val newLocation = fromGeocodingJson(((json.jsonObject["results"] as JSONArray)[0] as JSONObject))
                     // If this location has been recently recorded for this user, do nothing
                     val user = ParseUser.getCurrentUser()
+                    // Get user's most recent recorded location visit
                     val recentUserHistory = parseRepository.getMostRecentInUserHistory()
+                    // Get current date
                     val currentDate = Calendar.getInstance().time
+                    // Get date of user's most recent recorded visit
                     val historyDate = recentUserHistory?.let { ParseRepository.jsonObjectToDate(it) };
                     // Check if recent recording is the same place and within the same day
                     if ((recentUserHistory?.getString(KEY_PLACE_ID) == newLocation.placeId) || (historyDate?.let { parseRepository.differenceInDays(currentDate, it) } == 0)) {
+                        Log.i(TAG, "User has recently been to the same place " + newLocation.placeId)
                         // Don't need to notify
                         if ((historyDate?.let { parseRepository.differenceInHours(currentDate, it) } != 0)) {
                             // Visit was not within the hour, need to record
+                            Log.i(TAG, "Most recent visit to this place was not within the hour")
                             recordHistory(parseRepository, newLocation)
                         }
                     } else {
                         // Not the same place, or same place + not same day, need to record and notify
+                        Log.i(TAG, "User's most recent visit is not to the same place and/or same day")
                         checkIfHotspot(newLocation, parseRepository, user, context)
                         recordHistory(parseRepository, newLocation)
                     }
@@ -106,7 +112,6 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
         placeId?.let { user.put(ParseRepository.KEY_CURRENT_LOCATION, it) }
         user.saveInBackground()
         // This place is a hotspot, send notification
-        //Utils.setLocationUpdatesResult(context, locations);
         Utils.sendNotification(context, "Your current location is marked as a hotspot")
         Utils.getLocationUpdatesResult(context)?.let { Log.i(TAG, it) }
     }

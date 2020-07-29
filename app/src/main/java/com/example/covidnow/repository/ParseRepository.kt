@@ -189,8 +189,6 @@ class ParseRepository {
         return visitorHistory
     }
 
-
-
     fun differenceInDays(currDate: Date, otherDate: Date): Int {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
     }
@@ -254,7 +252,5 @@ class ParseRepository {
             val strDate = (jsonObject).getString("date")
             return formatter.parse(strDate) as Date
         }
-
-
     }
 }

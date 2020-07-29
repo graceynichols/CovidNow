@@ -1,4 +1,4 @@
-package com.example.covidnow.helpers
+package com.example.covidnow.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,13 +7,13 @@ import android.location.Location
 import android.util.Log
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
 import com.example.covidnow.R
+import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Location.Companion.KEY_PLACE_ID
 import com.example.covidnow.models.Location.Companion.fromGeocodingJson
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.ParseRepository
 import com.google.android.gms.location.LocationResult
 import com.parse.GetCallback
-import com.parse.Parse
 import com.parse.ParseUser
 import com.parse.SaveCallback
 import okhttp3.Headers
@@ -49,32 +49,22 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     val recentUserHistory = parseRepository.getMostRecentInUserHistory()
                     val currentDate = Calendar.getInstance().time
                     val historyDate = recentUserHistory?.let { ParseRepository.jsonObjectToDate(it) };
-                    // Check if same place and within the hour
-                    if ((recentUserHistory?.getString(KEY_PLACE_ID) == newLocation.placeId)) {
-                        // Same place
-                        if (historyDate?.let { parseRepository.differenceInHours(currentDate, it) } != 0) {
+                    // Check if recent recording is the same place and within the same day
+                    if ((recentUserHistory?.getString(KEY_PLACE_ID) == newLocation.placeId) || (historyDate?.let { parseRepository.differenceInDays(currentDate, it) } == 0)) {
+                        // Don't need to notify
+                        if ((historyDate?.let { parseRepository.differenceInHours(currentDate, it) } != 0)) {
                             // Visit was not within the hour, need to record
-                            if (historyDate?.let { parseRepository.differenceInDays(currentDate, it) } != 0) {
-                                // Visit not within the same day, need to notify
-                                checkIfHotspot(newLocation, parseRepository, user, context)
-                            }
-                            // Record this visit
                             recordHistory(parseRepository, newLocation)
                         }
                     } else {
-                        // Not the same place, need to record and notify
+                        // Not the same place, or same place + not same day, need to record and notify
                         checkIfHotspot(newLocation, parseRepository, user, context)
                         recordHistory(parseRepository, newLocation)
                     }
-                    // Find if this is a hotspot from Parse
-                    Log.i(TAG, "Searching for place " + newLocation.placeId)
-                    checkIfHotspot(newLocation, parseRepository, user, context)
-
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
             }
-
             override fun onFailure(statusCode: Int, headers: Headers, response: String, throwable: Throwable) {
                 Log.i(TAG, "Failed to retrieve user's background location place ID")
             }
@@ -82,6 +72,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun recordHistory(parseRepository: ParseRepository, newLocation: com.example.covidnow.models.Location) {
+        Log.i(TAG, "Recording history for user " + ParseUser.getCurrentUser().objectId + " and place: " + newLocation.placeId)
         // Add this location to user's history
         newLocation.placeId?.let { parseRepository.addToUserHistory(it, SaveCallback { Log.i(TAG, "Location saved to user history") }) }
         // Add this user to location's history
@@ -89,6 +80,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun checkIfHotspot(newLocation: com.example.covidnow.models.Location, parseRepository: ParseRepository, user: ParseUser?, context: Context) {
+        Log.i(TAG, "Checking if " + newLocation.placeId + " is a hotspot from Parse")
         newLocation.placeId?.let {
             parseRepository.searchPlace(it, GetCallback { `object`, e ->
                 Log.i(TAG, "Parse query finished")

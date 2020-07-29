@@ -1,7 +1,6 @@
 package com.example.covidnow.fragment
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
@@ -25,7 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
-import com.example.covidnow.helpers.LocationUpdatesBroadcastReceiver
+import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
 import com.example.covidnow.repository.ParseRepository

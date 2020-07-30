@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.example.covidnow.R
 import com.example.covidnow.databinding.ActivityLoginBinding
+import com.example.covidnow.helpers.PermissionsRequestHelper
 import com.example.covidnow.viewmodels.LoginViewModel
 import com.parse.LogInCallback
 import com.parse.ParseException
@@ -27,7 +28,6 @@ class LoginActivity : AppCompatActivity() {
     @SuppressLint("WrongConstant")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Set up custom action bar
         this.supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM;
         supportActionBar?.setDisplayShowCustomEnabled(true);
@@ -45,6 +45,14 @@ class LoginActivity : AppCompatActivity() {
         if (ParseUser.getCurrentUser() != null) {
             Log.i(TAG, "Logging in: " + ParseUser.getCurrentUser().username)
             goMainActivity()
+        }
+        val permissionsRequestHelper = PermissionsRequestHelper(this)
+
+        if (permissionsRequestHelper.validatePermissionsLocation()){
+            // Permission granted
+            Log.i(TAG, "Permission granted")
+        } else {
+            permissionsRequestHelper.requestPermissions()
         }
         binding?.btnLogin?.setOnClickListener {
             Log.i(TAG, "onClick login button")

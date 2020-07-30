@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
@@ -25,9 +26,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
-import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
+import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -41,7 +42,7 @@ import org.parceler.Parcels
 import java.util.*
 
 
-class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
+class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
@@ -52,7 +53,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val permissionFineLocation= Manifest.permission.ACCESS_FINE_LOCATION
     private val permissionBackgroundLocation= Manifest.permission.ACCESS_BACKGROUND_LOCATION
     private val permissionCoarseLocation= Manifest.permission.ACCESS_COARSE_LOCATION
-    private val REQUEST_CODE_LOCATION = 100
     private val UPDATE_INTERVAL: Long = 60000 // Every 60 seconds.
     private val FASTEST_UPDATE_INTERVAL: Long = 30000 // Every 30 seconds
     private val MAX_WAIT_TIME = UPDATE_INTERVAL * 5 // Every 5 minutes.
@@ -64,17 +64,11 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.i(TAG, "OnCreate")
         // Called during initial creation of fragment
         super.onCreate(savedInstanceState)
         // Get user's location permission
-        if (validatePermissionsLocation()){
-            // Permission granted
-            Log.i(TAG, "Permission granted")
-            locationPermission = true
-        } else {
-            requestPermissions()
-        }
+
+
 
     }
 
@@ -82,11 +76,12 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         Log.i(TAG, "OnViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
-        if (locationPermission) {
+        if (validatePermissionsLocation()) {
             // Retrieve user's current location with permission
             Log.i(TAG, "Getting current location")
             getMyLocation()
         } else {
+            Toast.makeText(context, "Permission needed to get news for your area", Toast.LENGTH_SHORT).show()
             requestPermissions()
         }
         // Assign view model class
@@ -288,16 +283,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_LOCATION) {
-            // Permission granted
-            getMyLocation()
-
-        } else {
-            Toast.makeText(context, "Location permission not granted", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     private fun permissionRequest(){
         Log.i(TAG, "In permission request")
@@ -317,8 +302,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
 
     companion object {
+        const val REQUEST_CODE_LOCATION = 100
         private const val TAG = "HomeFragment"
         private var adapterArticles: MutableList<Article>? = null
         private var adapter: ArticlesAdapter? = null
+
     }
 }

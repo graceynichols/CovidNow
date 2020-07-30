@@ -3,10 +3,12 @@ package com.example.covidnow.activity
 import android.annotation.SuppressLint
 import android.app.ActionBar
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -25,12 +27,9 @@ import com.example.covidnow.models.Article
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.parceler.Parcels
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     private val fragmentManager = supportFragmentManager
     private var bottomNavigationView: BottomNavigationView? = null
-    private var homeFragment: HomeFragment? = null
-    private var mapsFragment: MapsFragment? = null
-    private var profileFragment: ProfileFragment? = null
 
     @SuppressLint("WrongConstant")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,23 +41,61 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowCustomEnabled(true);
         supportActionBar?.setCustomView(R.layout.custom_action_bar);
 
+        val permissionsRequestHelper = PermissionsRequestHelper(this)
+
+                /*
+        if (permissionsRequestHelper.validatePermissionsLocation()){
+            // Permission granted
+            Log.i(TAG, "Permission granted")
+        } else {
+            permissionsRequestHelper.requestPermissions()
+        }
+
+        if (permissionsRequestHelper.validatePermissionsLocation()) {
+
+        }*/
         // Setup bottom nav bar
         bottomNavigationView = findViewById(R.id.bottomNavigation)
-        bottomNavigationView?.setupWithNavController(this.findNavController(R.id.nav_host_fragment))
+        //bottomNavigationView?.setupWithNavController(this.findNavController(R.id.nav_host_fragment))
         initializeBottomNavigationView(bottomNavigationView, this.fragmentManager)
         bottomNavigationView?.selectedItemId = R.id.action_home
 
     }
 
-    override fun onSupportNavigateUp() = findNavController(R.id.nav_host_fragment).navigateUp()
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        Log.i(TAG, "onRequestPermissionsResult")
+        if (requestCode == HomeFragment.REQUEST_CODE_LOCATION) {
+            // BEGIN_INCLUDE(permission_result)
+            // Received permission result for camera permission.
+            Log.i(TAG, "Received response for Location permission request.")
+
+            // Check if the only required permission has been granted
+            if ((grantResults.isNotEmpty()) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Camera permission has been granted, preview can be displayed
+                Log.i(TAG, "Location permission has now been granted.")
+                getHomeFragLocation()
+            }
+        }  else {
+            super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+        }
+    }
+
 
     companion object {
         const val TAG = "MainActivity"
+        const val MAPS_TAG = "MapsFragment"
+        const val HOME_TAG = "HomeFragment"
+        const val PROFILE_TAG = "ProfileFragment"
         private var mapsFragment: MapsFragment? = null
         private var homeFragment: HomeFragment? = null
         private var profileFragment: ProfileFragment? = null
+        private var profileFlag: Boolean = false
+        private var mapsFlag: Boolean = false
+        private var homeFlag: Boolean = false
         private var fragmentManager: FragmentManager? = null
         private var ft: FragmentTransaction? = null
+
         fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager) {
             bottomNavigationView?.setOnNavigationItemSelectedListener { menuItem ->
                 ft = fManager.beginTransaction()
@@ -82,87 +119,112 @@ class MainActivity : AppCompatActivity() {
         }
 
         private fun displayProfile() {
-            if (homeFragment != null) {
+            if (homeFlag) {
+                homeFragment = fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment
                 if ((homeFragment as HomeFragment).isAdded) {
                     Log.i(TAG, "Detaching home fragment")
                     ft?.detach(homeFragment as HomeFragment)
                 }
             }
-            if (mapsFragment != null) {
+            if (mapsFlag) {
+                mapsFragment = fragmentManager?.findFragmentByTag(MAPS_TAG) as MapsFragment
                 if ((mapsFragment as MapsFragment).isAdded) {
                     Log.i(TAG, "Detaching home fragment")
                     ft?.detach(mapsFragment as MapsFragment)
                 }
             }
-            if (profileFragment == null) {
+            if (!profileFlag) {
                 Log.i(TAG, "Creating profile fragment")
-                // Instantiate maps fragment only once
-                profileFragment = ProfileFragment()
+                // Instantiate profile fragment only once
+                profileFlag = true
+                ft?.replace(R.id.flContainer, ProfileFragment(), PROFILE_TAG)
 
             } else {
+                profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
                 if ((profileFragment as ProfileFragment).isDetached) {
                     Log.i(TAG, "Attaching Profile fragment")
                     ft?.attach(profileFragment as ProfileFragment)
                 }
+                ft?.replace(R.id.flContainer, profileFragment as ProfileFragment, PROFILE_TAG)
             }
-            ft?.replace(R.id.flContainer, profileFragment as ProfileFragment)
             ft?.addToBackStack("ProfileFragment")
         }
 
         private fun displayMaps() {
-            if (profileFragment != null) {
-                if ((profileFragment as ProfileFragment).isAdded) {
+            if (profileFlag) {
+                profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
+                if (profileFragment?.isAdded == true) {
                     Log.i(TAG, "Detaching Profile fragment")
                     ft?.detach(profileFragment as ProfileFragment)
                 }
             }
-            if (homeFragment != null) {
+            if (homeFlag) {
+                homeFragment = fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment
                 if ((homeFragment as HomeFragment).isAdded) {
                     Log.i(TAG, "Detaching home fragment")
                     ft?.detach(homeFragment as HomeFragment)
                 }
             }
-            if (Companion.mapsFragment == null) {
+            if (!mapsFlag) {
                 Log.i(TAG, "Creating maps fragment")
                 // Instantiate maps fragment only once
-                Companion.mapsFragment = MapsFragment()
+                mapsFlag = true
+                ft?.replace(R.id.flContainer, MapsFragment(), MAPS_TAG)
             } else {
-                if ((Companion.mapsFragment as MapsFragment).isDetached) {
+                mapsFragment = fragmentManager?.findFragmentByTag(MAPS_TAG) as MapsFragment
+                if ((mapsFragment as MapsFragment).isDetached) {
                     Log.i(TAG, "Attaching Maps fragment")
-                    Companion.ft?.attach(Companion.mapsFragment as MapsFragment)
+                    ft?.attach(mapsFragment as MapsFragment)
                 }
+                ft?.replace(R.id.flContainer, mapsFragment as MapsFragment, MAPS_TAG)
             }
-            Companion.ft?.replace(R.id.flContainer, Companion.mapsFragment as MapsFragment)
-
             ft?.addToBackStack("MapsFragment")
         }
 
         private fun displayHome() {
-            if (profileFragment != null) {
-                if ((profileFragment as ProfileFragment).isAdded) {
+            if (profileFlag) {
+                profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
+                if (profileFragment?.isAdded == true) {
                     Log.i(TAG, "Detaching Profile fragment")
                     ft?.detach(profileFragment as ProfileFragment)
                 }
             }
-            if (mapsFragment != null) {
+            if (mapsFlag) {
+                mapsFragment = fragmentManager?.findFragmentByTag(MAPS_TAG) as MapsFragment
                 if ((mapsFragment as MapsFragment).isAdded) {
                     Log.i(TAG, "Detaching home fragment")
                     ft?.detach(mapsFragment as MapsFragment)
                 }
             }
             // Add home fragment
-            if (homeFragment == null) {
+            if (!homeFlag) {
                 // Instantiate home fragment only once
-                homeFragment = HomeFragment()
+                Log.i(TAG, "Creating home fragment")
+                homeFlag = true
+                ft?.replace(R.id.flContainer, HomeFragment(), HOME_TAG)
+
             } else {
+                Log.i(TAG, "HomeFragment is not null")
+                homeFragment = fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment
                 if ((homeFragment as HomeFragment).isDetached) {
                     Log.i(TAG, "Attaching home fragment")
                     ft?.attach(homeFragment as HomeFragment)
                 }
-            }
-            ft?.replace(R.id.flContainer, homeFragment as HomeFragment)
+                ft?.replace(R.id.flContainer, homeFragment as HomeFragment, HOME_TAG)
 
+            }
             ft?.addToBackStack("HomeFragment")
+
+        }
+
+        fun getHomeFragLocation() {
+            Log.i(TAG, "in get home frag location")
+            homeFragment = fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment
+            if (homeFragment == null) {
+                Log.i(TAG, "Home fragment is null, this shouldn't happen")
+            } else {
+                (fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment).getMyLocation()
+            }
         }
     }
 }

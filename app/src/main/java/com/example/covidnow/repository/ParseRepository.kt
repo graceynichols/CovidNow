@@ -59,13 +59,15 @@ class ParseRepository {
         user.username = username
         user.setPassword(password)
         user.email = email
+        // Invoke signUpInBackground
+        user.signUpInBackground(signUpCallback)
         // Initialize other properties
         user.put(KEY_NUM_REVIEWS, 0)
         // Messages will hold their exposure history
         user.put(KEY_MESSAGES, Messages.createMessages())
         user.put(KEY_LOCATION_HISTORY, JSONArray())
-        // Invoke signUpInBackground
-        user.signUpInBackground(signUpCallback)
+        user.saveInBackground()
+
     }
 
     fun getMostRecentInUserHistory(): JSONObject? {

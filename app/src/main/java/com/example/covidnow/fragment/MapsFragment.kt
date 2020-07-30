@@ -101,11 +101,12 @@ class MapsFragment : Fragment() {
         ivArrow = view.findViewById(R.id.ivArrow)
 
         if (validatePermissionsLocation()){
-            Log.i(TAG, "permission")
+            Log.i(TAG, "Permission granted")
             getMyLocation()
         }
         else{
-            requestPermissions()
+            Log.i(TAG, "Permission not granted")
+            //requestPermissions()
         }
 
         if (savedInstanceState != null && savedInstanceState.keySet().contains(KEY_LOCATION)) {

@@ -7,6 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
+import com.example.covidnow.fragment.CovidAlertDialogueFragment
+import com.example.covidnow.fragment.HotspotAlertDialogFragment
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Article.Companion.fromJson
 import com.example.covidnow.models.Location
@@ -73,6 +75,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 // The location was saved in parse
                 Log.i(TAG, "* This location WAS previously saved $placeId")
                 finalLocation?.postValue(`object`)
+
             }
         })
     }

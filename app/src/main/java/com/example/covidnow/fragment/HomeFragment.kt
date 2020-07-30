@@ -28,6 +28,7 @@ import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
 import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
+import com.example.covidnow.models.Location
 import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
@@ -61,15 +62,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        // Called during initial creation of fragment
-        super.onCreate(savedInstanceState)
-        // Get user's location permission
-
-
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -137,6 +129,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         // Listen for location to be retrieved for quick review
         val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
             Log.i(TAG, "Location received from view model as Location")
+            if (mViewModel?.getFinalLocation()?.value?.isHotspot == true) {
+                // Show user alert dialog that this is a hotspot
+                showAlertDialog(mViewModel?.getFinalLocation()?.value as Location)
+            }
             btnQuickReview?.setOnClickListener(View.OnClickListener {
                 Log.i(TAG, "Quick Review button clicked!")
                 goQuickReview()
@@ -144,6 +140,11 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         // Listen for news to be ready to post on home screen
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+    }
+
+    private fun showAlertDialog(location: Location) {
+        val alertDialog: HotspotAlertDialogFragment = HotspotAlertDialogFragment.newInstance("Warning", location)
+        fragmentManager?.let { alertDialog.show(it, "fragment_alert") };
     }
 
     override fun onStart() {
@@ -298,8 +299,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
         return activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionBackgroundLocation) } == PackageManager.PERMISSION_GRANTED
     }
-
-
 
     companion object {
         const val REQUEST_CODE_LOCATION = 100

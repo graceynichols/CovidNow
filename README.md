@@ -8,7 +8,7 @@
 
 ## Overview
 ### Description
-A coronavirus news app. Users can get current information regarding case counts, stay at home ordinances for their area, and breaking news from well known (verified) news outlets (to combat fake news and misinformation). Users can also see a map view and mark areas as "hot spots" that have too many people or where you can't social distance properly, and view places other people have marked as "hot spots". 
+A coronavirus news app. Users can get current information regarding case counts and news for their are and see a map view and mark areas as "hot spots" that have too many people or where you can't social distance properly, and view places other people have marked as "hot spots" (if the user is in a hotspot without the app open they will get a push notification). The app also periodically tracks the user's location and if the user self designates as having covid the app alerts any users who were at the same place on the same day as the infected user for the past 14 days. 
 
 ### App Evaluation
 [Evaluation of your app across the following attributes]

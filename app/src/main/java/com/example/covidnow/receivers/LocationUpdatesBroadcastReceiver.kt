@@ -53,9 +53,11 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     // Get date of user's most recent recorded visit
                     val historyDate = recentUserHistory?.let { ParseRepository.jsonObjectToDate(it) };
                     // Check if recent recording is the same place and within the same day
-                    if ((recentUserHistory?.getString(KEY_PLACE_ID) == newLocation.placeId) || (historyDate?.let { parseRepository.differenceInDays(currentDate, it) } == 0)) {
+                    if ((recentUserHistory != null) && (recentUserHistory.getString(KEY_PLACE_ID) == newLocation.placeId) && (historyDate?.let { parseRepository.differenceInDays(currentDate, it) } == 0)) {
                         Log.i(TAG, "User has recently been to the same place " + newLocation.placeId)
                         // Don't need to notify
+                        Log.i(TAG, currentDate.toString())
+                        Log.i(TAG, historyDate.toString())
                         if ((historyDate?.let { parseRepository.differenceInHours(currentDate, it) } != 0)) {
                             // Visit was not within the hour, need to record
                             Log.i(TAG, "Most recent visit to this place was not within the hour")

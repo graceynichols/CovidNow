@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
@@ -15,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
@@ -40,7 +38,6 @@ import com.parse.ParseUser
 import com.parse.SaveCallback
 import org.json.JSONObject
 import org.parceler.Parcels
-import permissions.dispatcher.NeedsPermission
 import java.util.*
 
 
@@ -59,16 +56,42 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val UPDATE_INTERVAL: Long = 60000 // Every 60 seconds.
     private val FASTEST_UPDATE_INTERVAL: Long = 30000 // Every 30 seconds
     private val MAX_WAIT_TIME = UPDATE_INTERVAL * 5 // Every 5 minutes.
+    private var locationPermission = false
+    private var backgroundPermission = true
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(TAG, "OnCreate")
+        // Called during initial creation of fragment
+        super.onCreate(savedInstanceState)
+        // Get user's location permission
+        if (validatePermissionsLocation()){
+            // Permission granted
+            Log.i(TAG, "Permission granted")
+            locationPermission = true
+        } else {
+            requestPermissions()
+        }
+
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.i(TAG, "OnViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
+        if (locationPermission) {
+            // Retrieve user's current location with permission
+            Log.i(TAG, "Getting current location")
+            getMyLocation()
+        } else {
+            requestPermissions()
+        }
         // Assign view model class
         mViewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
+
         rvArticles = view.findViewById(R.id.rvArticles)
         tvCases = view.findViewById(R.id.tvCases)
         pbLoading = view.findViewById(R.id.pbLoading)
@@ -79,18 +102,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
         // Show progress bar while loading
         pbLoading?.visibility = View.VISIBLE
-
-        // Retrieve user's current location with permission
-        Log.i(TAG, "Getting current location")
-
-        // Get user's location permission
-        if (validatePermissionsLocation()){
-            // Permission granted
-            Log.i(TAG, "Permission granted")
-            getMyLocation()
-        } else {
-            requestPermissions()
-        }
 
         // Make sure user has a messages object
         if (ParseUser.getCurrentUser()[ParseRepository.KEY_MESSAGES] == null) {
@@ -111,7 +122,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
         // Listen for case count from news API
         val caseCountObserver: Observer<String> = Observer<String> { caseCount -> // Case count is ready to be shown
-            Log.i(TAG, "News received from View Model")
+            Log.i(TAG, "Case count received from View Model")
             tvCases?.text = caseCount
         }
         // Listen for case count to be put by NewsRepo
@@ -194,8 +205,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
         // Only do background updates with permission
         if (validatePermissionsBackground()) {
-            Log.i(TAG, "Background permissions granted")
-            createLocationRequest()
+             Log.i(TAG, "Background permissions granted")
+                createLocationRequest()
             mFusedLocationClient?.let { requestLocationUpdates(it) }
         }
     }
@@ -255,7 +266,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
 
     private fun requestPermissions(){
-        val contextProvider: Boolean? = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, permissionFineLocation) }
+        Log.i(TAG, "Requesting permissions")
+        val contextProvider = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, permissionFineLocation) }
 
         if (contextProvider != null) {
             if(contextProvider){
@@ -263,6 +275,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
             }
             permissionRequest()
+        } else {
+            Log.i(TAG, "Context provider was null!")
         }
 
     }
@@ -274,20 +288,33 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_LOCATION) {
+            // Permission granted
+            getMyLocation()
+
+        } else {
+            Toast.makeText(context, "Location permission not granted", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun permissionRequest(){
+        Log.i(TAG, "In permission request")
         activity?.let { ActivityCompat.requestPermissions(it, arrayOf(permissionFineLocation, permissionCoarseLocation, permissionBackgroundLocation), REQUEST_CODE_LOCATION) }
     }
     private fun validatePermissionsLocation():Boolean{
-        val fineLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionFineLocation) } == PackageManager.PERMISSION_GRANTED
-        //val coarseLocationAvailable= activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionCoarseLocation) } ==PackageManager.PERMISSION_GRANTED
-
-        return fineLocationAvailable
+        val fineLocationAvailable = activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionFineLocation) } == PackageManager.PERMISSION_GRANTED
+        val coarseLocationAvailable = activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionCoarseLocation) } ==PackageManager.PERMISSION_GRANTED
+        return fineLocationAvailable && coarseLocationAvailable
     }
 
     private fun validatePermissionsBackground():Boolean{
-        //return false
+
         return activity?.applicationContext?.let { ActivityCompat.checkSelfPermission(it, permissionBackgroundLocation) } == PackageManager.PERMISSION_GRANTED
     }
+
+
 
     companion object {
         private const val TAG = "HomeFragment"

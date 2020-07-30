@@ -248,7 +248,7 @@ class ParseRepository {
 
         @JvmStatic
         fun jsonObjectToDate(jsonObject: JSONObject): Date {
-            val formatter: DateFormat = SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy")
+            val formatter: DateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
             val strDate = (jsonObject).getString("date")
             return formatter.parse(strDate) as Date
         }

@@ -9,7 +9,7 @@ import com.parse.ParseUser
 import com.parse.SignUpCallback
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val parseRepository: ParseRepository
+    private val parseRepository: ParseRepository = ParseRepository()
     fun loginUser(username: String, password: String?, logInCallback: LogInCallback?) {
         Log.i(TAG, "Attempting to login user $username")
         ParseUser.logInInBackground(username, password, logInCallback)
@@ -24,7 +24,4 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         private const val TAG = "LoginViewModel"
     }
 
-    init {
-        parseRepository = ParseRepository()
-    }
 }

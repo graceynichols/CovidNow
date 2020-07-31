@@ -29,21 +29,15 @@
         android:src="@drawable/baseline_add_location_alt_white_18dp"
         app:fabSize="normal" />
 
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <EditText
         android:id="@+id/etSearch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="270dp"
+        android:layout_height="43dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp"
         android:background="#FFFFFF"
         android:elevation="1dp"
         android:ems="10"
@@ -52,25 +46,33 @@
         android:inputType="textPersonName"
         android:padding="8dp" />
 
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <ImageButton
         android:id="@+id/btnSearch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/etSearch"
-        android:layout_alignEnd="@+id/etSearch"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="0dp"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_alignTop="@+id/etSearch"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="-4dp"
+        android:layout_marginTop="4dp"
+        android:layout_toEndOf="@id/etSearch"
+        android:backgroundTint="#FFFFFF"
         android:src="?android:attr/actionModeWebSearchDrawable" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
         android:layout_width="match_parent"
         android:layout_height="387dp"
-        android:layout_below="@+id/btnSearch"
+        android:layout_below="@+id/etSearch"
         android:layout_alignParentStart="false"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="0dp"
-        android:layout_marginTop="221dp"
+        android:layout_marginTop="291dp"
         android:layout_marginBottom="0dp"
         android:visibility="gone"
         app:cardCornerRadius="10dp"

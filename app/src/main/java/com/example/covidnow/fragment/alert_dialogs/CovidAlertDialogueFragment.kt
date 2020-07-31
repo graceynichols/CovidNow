@@ -1,16 +1,17 @@
-package com.example.covidnow.fragment
+package com.example.covidnow.fragment.alert_dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import com.example.covidnow.R
 import com.example.covidnow.viewmodels.ProfileViewModel
 
 class CovidAlertDialogueFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val title = arguments?.getString("title")
-        val alertDialogBuilder = AlertDialog.Builder(activity)
+        val alertDialogBuilder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
         alertDialogBuilder.setTitle(title)
         alertDialogBuilder.setMessage("This includes anyone who was at the same location on the same day as you. Are you sure?")
         alertDialogBuilder.setPositiveButton("OK") { dialog, which -> // on success

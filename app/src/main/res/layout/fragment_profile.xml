@@ -38,7 +38,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:layout_marginEnd="10dp"
         android:backgroundTint="@color/colorAccent"
         android:text="@string/logout"
@@ -47,18 +47,34 @@
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/btnResetPassword"
+        android:id="@+id/btnUsername"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:layout_below="@+id/btnLogout"
+        android:layout_below="@id/btnLogout"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
+        android:backgroundTint="@color/colorAccent"
+        android:text="Change Username"
+        android:textColor="@color/design_default_color_background"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnPassword"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_below="@id/btnUsername"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentBottom="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="10dp"
         android:backgroundTint="@color/colorAccent"
         android:text="@string/reset_password"
         android:textColor="@color/design_default_color_background"
@@ -83,13 +99,13 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHistory"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_width="397dp"
+        android:layout_height="240dp"
         android:layout_below="@id/tvExposureHistory"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="false"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="5dp" />
 
     <TextView

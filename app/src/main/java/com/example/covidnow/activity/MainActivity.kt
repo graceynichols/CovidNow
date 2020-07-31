@@ -40,6 +40,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         this.supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM;
         supportActionBar?.setDisplayShowCustomEnabled(true);
         supportActionBar?.setCustomView(R.layout.custom_action_bar);
+        mapsFlag = false
+        homeFlag = false
+        profileFlag = false
 
         val permissionsRequestHelper = PermissionsRequestHelper(this)
 
@@ -138,7 +141,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
                 // Instantiate profile fragment only once
                 profileFlag = true
                 ft?.replace(R.id.flContainer, ProfileFragment(), PROFILE_TAG)
-
             } else {
                 profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
                 if ((profileFragment as ProfileFragment).isDetached) {

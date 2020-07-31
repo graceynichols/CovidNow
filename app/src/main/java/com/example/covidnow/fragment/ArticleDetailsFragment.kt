@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -22,6 +23,7 @@ class ArticleDetailsFragment : Fragment() {
     private var tvSource: TextView? = null
     private var tvDate: TextView? = null
     private var tvSummary: TextView? = null
+    private var pbLoading: ProgressBar? = null
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -39,7 +41,11 @@ class ArticleDetailsFragment : Fragment() {
         tvSource = view.findViewById(R.id.tvSource)
         tvDate = view.findViewById(R.id.tvDate)
         tvSummary = view.findViewById(R.id.tvSummary)
+        pbLoading = view.findViewById(R.id.pbLoading)
         val ivImage: ImageView = view.findViewById(R.id.ivImage)
+
+        // Show progress bar while loading
+        pbLoading?.visibility = View.VISIBLE
 
         // Set text information
         tvHeadline?.text = article?.headline
@@ -61,5 +67,8 @@ class ArticleDetailsFragment : Fragment() {
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         })
+
+        // Hide progress bar
+        pbLoading?.visibility = View.GONE
     }
 }

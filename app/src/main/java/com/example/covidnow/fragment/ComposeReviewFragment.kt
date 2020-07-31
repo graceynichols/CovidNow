@@ -119,6 +119,7 @@ class ComposeReviewFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        ivPostImage?.visibility = View.VISIBLE
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // by this point we have the camera photo on disk
@@ -127,7 +128,7 @@ class ComposeReviewFragment : Fragment() {
                 // Load the taken image into a preview
                 ivPostImage?.setImageBitmap(takenImage)
             } else { // Result was a failure
-                Toast.makeText(context, "Picture wasn't taken!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Picture wasn't taken! Please try again", Toast.LENGTH_SHORT).show()
             }
         }
     }

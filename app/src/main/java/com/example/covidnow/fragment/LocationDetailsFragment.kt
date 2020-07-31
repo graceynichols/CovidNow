@@ -27,6 +27,7 @@ class LocationDetailsFragment : Fragment() {
     private var ivHotspot: ImageView? = null
     private var ivImage: ImageView? = null
 
+
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -75,9 +76,6 @@ class LocationDetailsFragment : Fragment() {
             Log.i(TAG, "Location has no picture")
         }
 
-        // Hide progress bar
-        pbLoading?.visibility = View.GONE
-
         // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
             Log.i(TAG, "Edit button clicked!")
@@ -90,6 +88,9 @@ class LocationDetailsFragment : Fragment() {
             fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
                     newFrag)?.addToBackStack("LocationDetailsFragment")?.commit()
         })
+
+        // Hide progress bar
+        pbLoading?.visibility = View.GONE
     }
 
     companion object {

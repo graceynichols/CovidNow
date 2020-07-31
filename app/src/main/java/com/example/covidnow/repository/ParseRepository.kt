@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import com.example.covidnow.models.Location
 import com.example.covidnow.models.Messages
+import com.example.covidnow.viewmodels.ProfileViewModel
 import com.parse.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -235,6 +236,19 @@ class ParseRepository {
 
     fun getUserMessages(): Messages? {
         return ParseUser.getCurrentUser().getParseObject(KEY_MESSAGES)?.fetchIfNeeded()
+    }
+
+    fun resetPassword(email: String) {
+        ParseUser.requestPasswordResetInBackground(email) { e ->
+            if (e == null) {
+                // An email was successfully sent with reset instructions.
+                Log.i(TAG, "Password reset email sent")
+            } else {
+                // Something went wrong. Look at the ParseException to see what's up.
+                Log.i(TAG, "Error resetting password")
+                Log.e(TAG, e.toString())
+            }
+        }
     }
 
     companion object {

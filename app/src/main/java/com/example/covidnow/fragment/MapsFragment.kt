@@ -100,6 +100,8 @@ class MapsFragment : Fragment() {
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         ivArrow = view.findViewById(R.id.ivArrow)
 
+        var flag = true
+
         if (validatePermissionsLocation()){
             Log.i(TAG, "Permission granted")
             getMyLocation()
@@ -173,7 +175,11 @@ class MapsFragment : Fragment() {
                     // Hide progress bar
                     pbLoading?.visibility = View.GONE
                     // Make places list slide up
-                    showPlaces()
+                    if (flag) {
+                        showPlaces()
+                    }
+                    flag = false
+
                 }
                 // Listen for List<covidnow.location> of saved places received from ParseRepo
                 mViewModel?.getNearbyPlacesList()?.observe(viewLifecycleOwner, placesListObserver)
@@ -222,6 +228,7 @@ class MapsFragment : Fragment() {
                 adapter?.goToDetails(viewHolder.adapterPosition)
             }
 
+            // Show blue background on swipe
             override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
                 val itemView = viewHolder.itemView
@@ -245,7 +252,7 @@ class MapsFragment : Fragment() {
             }
 
             override fun onSwipeUp() {
-                showPlaces()
+                //showPlaces()
             }
         }
     }
@@ -263,6 +270,7 @@ class MapsFragment : Fragment() {
 
     private fun showPlaces() {
         // Show rvPlaces with animation
+        Log.i(TAG, "Showing places")
         card?.visibility = View.VISIBLE
         card?.startAnimation(AnimationUtils.loadAnimation(context,
                 R.anim.slide_up))
@@ -280,6 +288,7 @@ class MapsFragment : Fragment() {
 
     private fun hidePlaces() {
         // Hide rvPlaces with animation
+        Log.i(TAG, "Hiding places")
         card?.visibility = View.GONE
         card?.startAnimation(AnimationUtils.loadAnimation(context,
                 R.anim.slide_down))

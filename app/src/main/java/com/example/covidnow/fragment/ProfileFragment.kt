@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.activity.LoginActivity
 import com.example.covidnow.adapter.HistoryAdapter
+import com.example.covidnow.fragment.alert_dialogs.ChangeInfoAlertDialogFragment
+import com.example.covidnow.fragment.alert_dialogs.CovidAlertDialogueFragment
 import com.example.covidnow.helpers.SwipeToDeleteCallback
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -33,6 +35,8 @@ class ProfileFragment : Fragment() {
     private var rvHistory: RecyclerView? = null
     private var btnLogout: Button? = null
     private var btnCovid: Button? = null
+    private var btnPassword: Button? = null
+    private var btnUsername: Button? = null
     private var mViewModel: ProfileViewModel? = null
     private var adapterHistory: List<JSONObject>?  = null
     private var pbLoading: ProgressBar? = null
@@ -53,6 +57,8 @@ class ProfileFragment : Fragment() {
         btnCovid = view.findViewById(R.id.btnCovid)
         rvHistory = view.findViewById(R.id.rvHistory)
         pbLoading = view.findViewById(R.id.pbLoading)
+        btnUsername = view.findViewById(R.id.btnUsername)
+        btnPassword = view.findViewById(R.id.btnPassword)
 
         // Show progress bar
         pbLoading?.visibility = View.VISIBLE
@@ -107,15 +113,32 @@ class ProfileFragment : Fragment() {
         })
 
         // If someone hits the "I have COVID-19" button
-        btnCovid?.setOnClickListener(View.OnClickListener { view ->
-            // Start compose review fragment
-            showAlertDialog();
+        btnCovid?.setOnClickListener(View.OnClickListener { _ ->
+            // Show covid alert
+            showCovidAlertDialog();
+        })
+
+        btnUsername?.setOnClickListener(View.OnClickListener { view ->
+            // Start change info alert
+            Log.i(TAG, "Username change requested")
+            showChangeInfoAlertDialog(true);
+        })
+
+        btnPassword?.setOnClickListener(View.OnClickListener { view ->
+            // Start change info alert
+            Log.i(TAG, "Password reset requested")
+            showChangeInfoAlertDialog(false);
         })
 
     }
 
-    private fun showAlertDialog() {
+    private fun showCovidAlertDialog() {
         val alertDialog: CovidAlertDialogueFragment = CovidAlertDialogueFragment.newInstance("Users who you may have exposed will be notified", mViewModel)
+        fragmentManager?.let { alertDialog.show(it, "fragment_alert") }
+    }
+
+    private fun showChangeInfoAlertDialog(isUsername: Boolean) {
+        val alertDialog: ChangeInfoAlertDialogFragment = ChangeInfoAlertDialogFragment.newInstance(mViewModel, isUsername)
         fragmentManager?.let { alertDialog.show(it, "fragment_alert") };
     }
 

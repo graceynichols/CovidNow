@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
@@ -26,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
+import com.example.covidnow.fragment.alert_dialogs.HotspotAlertDialogFragment
 import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Location
@@ -54,11 +54,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val permissionFineLocation= Manifest.permission.ACCESS_FINE_LOCATION
     private val permissionBackgroundLocation= Manifest.permission.ACCESS_BACKGROUND_LOCATION
     private val permissionCoarseLocation= Manifest.permission.ACCESS_COARSE_LOCATION
-    private val UPDATE_INTERVAL: Long = 60000 // Every 60 seconds.
-    private val FASTEST_UPDATE_INTERVAL: Long = 30000 // Every 30 seconds
-    private val MAX_WAIT_TIME = UPDATE_INTERVAL * 5 // Every 5 minutes.
-    private var locationPermission = false
-    private var backgroundPermission = true
+    // TODO: Times shortened for demo ONLY
+    private val UPDATE_INTERVAL: Long = 30000  // Every 30 seconds.
+    private val FASTEST_UPDATE_INTERVAL: Long = 10000 // Every 10 seconds
+    private val MAX_WAIT_TIME = UPDATE_INTERVAL * 2 // Every 2 minutes.
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)
@@ -222,12 +221,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
     private fun onLocationChanged(location: android.location.Location, apiKey: String) {
         // GPS may be turned off
-        if (location == null) {
-            Log.i(TAG, "Error, Location is NULL")
-            return
-        } else {
-            mViewModel?.getAddress(apiKey, Pair.create(location.latitude, location.longitude))
-        }
+        mViewModel?.getAddress(apiKey, Pair.create(location.latitude, location.longitude))
     }
 
     private fun createLocationRequest() {

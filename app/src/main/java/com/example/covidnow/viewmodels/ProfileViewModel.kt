@@ -3,16 +3,17 @@ package com.example.covidnow.viewmodels
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.example.covidnow.fragment.HomeFragment
 import com.example.covidnow.models.Location
 import com.example.covidnow.models.Messages
 import com.example.covidnow.repository.ParseRepository
 import com.parse.GetCallback
 import com.parse.ParseUser
-import kotlinx.android.parcel.Parcelize
+import com.parse.SaveCallback
 import org.json.JSONArray
 import org.json.JSONObject
-import org.parceler.Parcel
 import java.util.*
+
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val parseRepository: ParseRepository = ParseRepository()
@@ -21,6 +22,16 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         // Retrieve user's number of views from Parse
         val numReviews = user.getNumber(ParseRepository.KEY_NUM_REVIEWS)
         return numReviews?.toInt() ?: 0
+    }
+
+    fun resetPassword(email: String) {
+        parseRepository.resetPassword(email)
+    }
+
+    fun changeUsername(newUsername: String) {
+        val user = ParseUser.getCurrentUser()
+        user.username = newUsername
+        user.saveInBackground { Log.i(TAG, "User saved") }
     }
 
     fun logout(): ParseUser? {

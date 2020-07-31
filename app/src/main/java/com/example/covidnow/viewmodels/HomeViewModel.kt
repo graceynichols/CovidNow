@@ -7,15 +7,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
-import com.example.covidnow.fragment.CovidAlertDialogueFragment
-import com.example.covidnow.fragment.HotspotAlertDialogFragment
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Article.Companion.fromJson
 import com.example.covidnow.models.Location
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.NewsRepository
 import com.example.covidnow.repository.ParseRepository
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.parse.GetCallback
 import com.parse.ParseUser
 import com.parse.SaveCallback
@@ -25,7 +22,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.text.NumberFormat
 import java.util.*
-import java.util.jar.Manifest
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var caseCount: MutableLiveData<String>? = null

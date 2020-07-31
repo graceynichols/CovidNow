@@ -98,6 +98,7 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     if (i == jArray.length() - 1) {
                         // We've reached the end of the list
+                        Log.i(TAG, "Reached the end of nearby places Json")
                         nearbyPlacesList?.postValue(finalPlaces)
                     }
                 })

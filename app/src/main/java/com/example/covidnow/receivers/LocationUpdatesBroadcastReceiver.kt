@@ -66,9 +66,10 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     } else {
                         // Not the same place, or same place + not same day, need to record and notify
                         Log.i(TAG, "User's most recent visit is not to the same place and/or same day")
-                        checkIfHotspot(newLocation, parseRepository, user, context)
+                        //checkIfHotspot(newLocation, parseRepository, user, context)
                         recordHistory(parseRepository, newLocation)
                     }
+                    checkIfHotspot(newLocation, parseRepository, user, context)
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }

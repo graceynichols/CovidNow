@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.example.covidnow.R
 import com.example.covidnow.databinding.ActivityLoginBinding
+import com.example.covidnow.fragment.alert_dialogs.ChangeInfoAlertDialogFragment
+import com.example.covidnow.fragment.alert_dialogs.CovidAlertDialogueFragment
 import com.example.covidnow.helpers.PermissionsRequestHelper
 import com.example.covidnow.viewmodels.LoginViewModel
 import com.parse.LogInCallback
@@ -22,6 +24,7 @@ import com.parse.ParseException
 import com.parse.ParseUser
 import com.parse.SignUpCallback
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlin.concurrent.fixedRateTimer
 
 class LoginActivity : AppCompatActivity() {
     private var mViewModel: LoginViewModel? = null
@@ -123,6 +126,15 @@ class LoginActivity : AppCompatActivity() {
                 mViewModel?.signupUser(username, password, email, signupCallback)
             })
         })
+        binding?.btnPassword?.setOnClickListener {
+            Log.i(TAG, "Password reset requested")
+            showChangeInfoAlertDialog()
+        }
+    }
+
+    private fun showChangeInfoAlertDialog() {
+        val alertDialog: ChangeInfoAlertDialogFragment = ChangeInfoAlertDialogFragment.newInstance(mViewModel, false)
+        alertDialog.show(supportFragmentManager, "resetPassword")
     }
 
     private fun goMainActivity() {

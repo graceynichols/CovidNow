@@ -19,6 +19,7 @@ class PlacesRepository {
         params["keyword"] = search
         params["opennow"] = "true"
         Log.i(TAG, "Coordinates: $coords")
+        Log.i(TAG, "Making Places API call")
         client[NEARBY_SEARCH_URL, params, jsonHttpResponseHandler]
     }
 

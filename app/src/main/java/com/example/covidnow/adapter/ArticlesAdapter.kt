@@ -2,6 +2,7 @@ package com.example.covidnow.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
         private val tvSource: TextView = itemView.findViewById(R.id.tvSource)
         private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
         private val btnShare: ImageView = itemView.findViewById(R.id.btnShare)
+        private val btnLink: ImageView = itemView.findViewById(R.id.btnLink)
         fun bind(article: Article) {
             tvHeadline.text = article.headline
             tvSource.text = article.source
@@ -34,6 +36,12 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
             btnShare.setOnClickListener {
                 // Share article URL
                 article.url?.let { it1 -> share(it1) }
+            }
+
+            // Listen for open in browser
+            btnLink.setOnClickListener {
+                // Share article URL
+                article.url?.let { it1 -> viewInBrowser(it1) }
             }
 
             // On click for article details view
@@ -46,6 +54,14 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
                 //fragment.findNavController().navigate(R.id.action_global_articleDetailsFragment, result)
                 fragment.fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
                        newFrag)?.addToBackStack("HomeFragment")?.commit()
+            }
+        }
+
+        private fun viewInBrowser(link: String) {
+            val uri = Uri.parse(link)
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            if (context != null) {
+                startActivity(context, intent, null)
             }
         }
 

@@ -43,20 +43,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         mapsFlag = false
         homeFlag = false
         profileFlag = false
-
-        val permissionsRequestHelper = PermissionsRequestHelper(this)
-
-                /*
-        if (permissionsRequestHelper.validatePermissionsLocation()){
-            // Permission granted
-            Log.i(TAG, "Permission granted")
-        } else {
-            permissionsRequestHelper.requestPermissions()
-        }
-
-        if (permissionsRequestHelper.validatePermissionsLocation()) {
-
-        }*/
         // Setup bottom nav bar
         bottomNavigationView = findViewById(R.id.bottomNavigation)
         //bottomNavigationView?.setupWithNavController(this.findNavController(R.id.nav_host_fragment))
@@ -183,7 +169,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             ft?.addToBackStack("MapsFragment")
         }
 
-        private fun displayHome() {
+        @JvmStatic
+        fun displayHome() {
             if (profileFlag) {
                 profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
                 if (profileFragment?.isAdded == true) {

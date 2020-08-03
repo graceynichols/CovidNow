@@ -62,7 +62,7 @@
             app:srcCompat="@drawable/ic_share_black_18dp" />
 
         <ImageView
-            android:id="@+id/btnLink"
+            android:id="@+id/btnWorld"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvHeadline"

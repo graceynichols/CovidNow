@@ -38,6 +38,7 @@
         android:layout_alignParentTop="true"
         android:background="#DFDCDC"
         android:backgroundTint="@color/light_blue"
+        android:elevation="4dp"
         android:fontFamily="serif"
         android:padding="8dp"
         android:textAlignment="center"

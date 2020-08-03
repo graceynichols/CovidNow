@@ -14,6 +14,7 @@
         android:padding="8dp"
         android:text="@string/username"
         android:textAlignment="center"
+        android:elevation="4dp"
         android:textColor="@color/common_google_signin_btn_text_dark_default"
         android:textSize="24sp"
         android:textStyle="bold" />

@@ -100,7 +100,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put
@@ -202,7 +202,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         if (validatePermissionsBackground()) {
              Log.i(TAG, "Background permissions granted")
                 createLocationRequest()
-            mFusedLocationClient?.let { requestLocationUpdates(it) }
+            // TODO uncomment if you want location updates
+            //mFusedLocationClient?.let { requestLocationUpdates(it) }
         }
     }
 

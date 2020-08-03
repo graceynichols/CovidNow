@@ -22,10 +22,11 @@ class LocationDetailsFragment : Fragment() {
     private var tvName: TextView? = null
     private var tvAddress: TextView? = null
     private var tvHotspotDate: TextView? = null
-    private var btnEdit: FloatingActionButton? = null
+    private var btnEdit: ImageView? = null
     private var pbLoading: ProgressBar? = null
     private var ivHotspot: ImageView? = null
     private var ivImage: ImageView? = null
+    private var btnBack: ImageView? = null
 
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
@@ -43,7 +44,6 @@ class LocationDetailsFragment : Fragment() {
         tvName = view.findViewById(R.id.tvName)
         tvAddress = view.findViewById(R.id.tvAddress)
         tvHotspotDate = view.findViewById(R.id.tvHotspotDate)
-        btnEdit = view.findViewById(R.id.btnEdit)
         ivHotspot = view.findViewById(R.id.ivHotspot)
         ivImage = view.findViewById(R.id.ivImage)
         pbLoading = view.findViewById(R.id.pbLoading)
@@ -76,6 +76,18 @@ class LocationDetailsFragment : Fragment() {
             Log.i(TAG, "Location has no picture")
         }
 
+        // Set up custom toolbar
+        setupToolbar(location)
+
+
+
+        // Hide progress bar
+        pbLoading?.visibility = View.GONE
+    }
+
+    private fun setupToolbar(location: Location?) {
+        btnBack = view?.findViewById(R.id.btnBack)
+        btnEdit = view?.findViewById(R.id.btnEdit)
         // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
             Log.i(TAG, "Edit button clicked!")
@@ -89,8 +101,11 @@ class LocationDetailsFragment : Fragment() {
                     newFrag)?.addToBackStack("LocationDetailsFragment")?.commit()
         })
 
-        // Hide progress bar
-        pbLoading?.visibility = View.GONE
+        // Listen for custom back button
+        btnBack?.setOnClickListener {
+            Log.i(TAG, "Going back to maps")
+            fragmentManager?.popBackStackImmediate()
+        }
     }
 
     companion object {

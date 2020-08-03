@@ -33,9 +33,9 @@ class ChangeInfoAlertDialogFragment : DialogFragment() {
             toastText = "Your username has been changed"
         } else {
             // User is changing their password
-            alertDialogBuilder.setTitle("Please enter your email")
-            dialogText = "Reset my password"
-            toastText = "A password reset link has been emailed to you"
+            alertDialogBuilder.setTitle("Please enter new password")
+            dialogText = "Change my password"
+            toastText = "Your password has been changed"
         }
 
         alertDialogBuilder.setPositiveButton(dialogText) { dialog, which -> // on success
@@ -53,7 +53,7 @@ class ChangeInfoAlertDialogFragment : DialogFragment() {
                     // Reset password
                     (mViewModel as ProfileViewModel).resetPassword(userInput)
                 } else {
-                    toastText = "Email cannot be empty"
+                    toastText = "Password cannot be empty"
                 }
             }
             Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()

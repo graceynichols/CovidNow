@@ -169,8 +169,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             ft?.addToBackStack("MapsFragment")
         }
 
-        @JvmStatic
-        fun displayHome() {
+        private fun displayHome() {
             if (profileFlag) {
                 profileFragment = fragmentManager?.findFragmentByTag(PROFILE_TAG) as ProfileFragment
                 if (profileFragment?.isAdded == true) {

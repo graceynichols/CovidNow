@@ -101,19 +101,6 @@
         android:src="@drawable/image_placeholder"
         tools:src="@tools:sample/avatars" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btnEdit"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:backgroundTint="@android:color/holo_purple"
-        android:src="@drawable/baseline_edit_white_18dp"
-        app:backgroundTint="@color/common_google_signin_btn_text_dark_disabled"
-        app:fabSize="normal" />
-
     <ImageView
         android:id="@+id/btnBack"
         android:layout_width="45dp"
@@ -127,7 +114,7 @@
 
 
     <ImageView
-        android:id="@+id/btnShare2"
+        android:id="@+id/btnEdit"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_alignBottom="@+id/my_toolbar"

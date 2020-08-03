@@ -126,16 +126,9 @@ class LoginActivity : AppCompatActivity() {
                 mViewModel?.signupUser(username, password, email, signupCallback)
             })
         })
-        binding?.btnPassword?.setOnClickListener {
-            Log.i(TAG, "Password reset requested")
-            showChangeInfoAlertDialog()
-        }
+
     }
 
-    private fun showChangeInfoAlertDialog() {
-        val alertDialog: ChangeInfoAlertDialogFragment = ChangeInfoAlertDialogFragment.newInstance(mViewModel, false)
-        alertDialog.show(supportFragmentManager, "resetPassword")
-    }
 
     private fun goMainActivity() {
         val i = Intent(this, MainActivity::class.java)

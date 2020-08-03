@@ -5,4 +5,6 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="light_blue">#6EBDDA</color>
     <color name="hotspot_red">#ff0037</color>
+    <color name="safe_green">#4cc244</color>
+    <color name="darkest_gray">#363233</color>
 </resources>

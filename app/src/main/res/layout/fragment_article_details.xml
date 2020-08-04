@@ -13,8 +13,9 @@
         style="@style/HeaderBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-1dp"
         android:elevation="4dp" />
 
     <TextView
@@ -85,35 +86,24 @@
 
     <ImageView
         android:id="@+id/btnShare2"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/my_toolbar"
         android:layout_alignParentStart="false"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="17dp"
         android:elevation="5dp"
-        android:src="@drawable/ic_share_black_18dp" />
-
-    <ImageView
-        android:id="@+id/btnBack"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_alignBottom="@+id/my_toolbar"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="4dp"
-        android:elevation="5dp"
-        android:src="@drawable/ic_arrow_left_black_18dp" />
+        android:src="@drawable/ic_share_black_24dp" />
 
     <ImageView
         android:id="@+id/btnLink2"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/btnShare2"
         android:layout_marginEnd="30dp"
         android:layout_toStartOf="@+id/btnShare2"
         android:elevation="5dp"
-        android:src="@drawable/ic_public_black_18dp" />
+        android:src="@drawable/ic_public_black_24dp" />
 
 </RelativeLayout>

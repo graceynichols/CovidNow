@@ -100,7 +100,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put

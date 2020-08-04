@@ -66,24 +66,12 @@ class MapsFragment : Fragment() {
     private val REQUEST_CODE_LOCATION = 100
     private var lastSearch: String? = null
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-    }
-
-    //Here you can restore saved data in onSaveInstanceState Bundle
-    private fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        if (savedInstanceState != null) {
-            val SomeText = savedInstanceState.getString("title")
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(TAG, "OnCreate")
         super.onCreate(savedInstanceState)
         retainInstance = true //Will ignore onDestroy Method (Nested Fragments no need this if parent have it)
-
-
+        // Set view model
+        mViewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)
     }
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -124,8 +112,7 @@ class MapsFragment : Fragment() {
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         ivArrow = view.findViewById(R.id.ivArrow)
 
-        // Set view model
-        mViewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)
+
         mViewModel?.getNearbyPlacesList()?.removeObservers(viewLifecycleOwner)
 
 

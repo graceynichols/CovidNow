@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -49,6 +50,16 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         initializeBottomNavigationView(bottomNavigationView, this.fragmentManager)
         bottomNavigationView?.selectedItemId = R.id.action_home
 
+    }
+
+    fun hideActionBar() {
+        Log.i(TAG, "Hiding action bar")
+        supportActionBar?.hide()
+    }
+
+    fun showActionBar() {
+        Log.i(TAG, "Hiding action bar")
+        supportActionBar?.show()
     }
 
 

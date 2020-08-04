@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.covidnow.R
+import com.example.covidnow.activity.MainActivity
 import com.example.covidnow.adapter.HistoryAdapter
 import com.example.covidnow.models.Location
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -88,6 +89,7 @@ class LocationDetailsFragment : Fragment() {
     private fun setupToolbar(location: Location?) {
         btnBack = view?.findViewById(R.id.btnBack)
         btnEdit = view?.findViewById(R.id.btnEdit)
+
         // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
             Log.i(TAG, "Edit button clicked!")

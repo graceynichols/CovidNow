@@ -3,6 +3,7 @@ package com.example.covidnow.fragment
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
@@ -18,6 +19,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleObserver
@@ -344,6 +346,8 @@ class MapsFragment : Fragment() {
     fun addMarker(location: com.example.covidnow.models.Location) {
         // Add marker at current location
         val point = LatLng(location.latitude, location.longitude)
+        var bitmap: Bitmap? = null
+
         val marker = map?.addMarker(mViewModel?.createMarker(point, location))
         // Move camera to new marker
         moveCameraToLatLng(point)

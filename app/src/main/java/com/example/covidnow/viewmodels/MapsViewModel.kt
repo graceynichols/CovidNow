@@ -3,6 +3,8 @@ package com.example.covidnow.viewmodels
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Handler
 import android.os.SystemClock
 import android.util.Log
@@ -14,16 +16,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
+import com.example.covidnow.R
 import com.example.covidnow.models.Location
 import com.example.covidnow.models.Location.Companion.fromJson
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.repository.PlacesRepository
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.parse.GetCallback
 import okhttp3.Headers
 import org.json.JSONArray
@@ -215,7 +215,18 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun createMarker(point: LatLng, newLocation: Location): MarkerOptions {
-        val defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+
+        var color: Float? = null
+        // Change color whether hotspot or not
+        if (newLocation.isHotspot) {
+            // Red marker
+            color = BitmapDescriptorFactory.HUE_RED
+        } else {
+            // Green marker
+            color = BitmapDescriptorFactory.HUE_GREEN
+        }
+        var defaultMarker = BitmapDescriptorFactory.defaultMarker(color)
+
         return MarkerOptions()
                 .position(point)
                 .title(newLocation.name)

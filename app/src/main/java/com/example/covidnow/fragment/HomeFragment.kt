@@ -32,6 +32,8 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -49,6 +51,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
     private var btnQuickReview: FloatingActionButton? = null
+    private var chart: LineChart? = null
     private var pbLoading: ProgressBar? = null
     private var mViewModel: HomeViewModel? = null
     private val permissionFineLocation= Manifest.permission.ACCESS_FINE_LOCATION
@@ -82,7 +85,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         tvCases = view.findViewById(R.id.tvCases)
         pbLoading = view.findViewById(R.id.pbLoading)
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
+        chart = view.findViewById(R.id.chart)
 
+        // Chart past cases
+        setupChart()
         // Initialize recyclerview
         initializeRvArticles(rvArticles)
 
@@ -139,6 +145,11 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         // Listen for news to be ready to post on home screen
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+    }
+
+    private fun setupChart() {
+        val entries = ArrayList<Entry>()
+
     }
 
     private fun showAlertDialog(location: Location) {

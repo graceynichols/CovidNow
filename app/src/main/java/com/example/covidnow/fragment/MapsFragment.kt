@@ -3,6 +3,7 @@ package com.example.covidnow.fragment
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
@@ -18,6 +19,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleObserver
@@ -56,6 +58,7 @@ class MapsFragment : Fragment() {
     private var rvPlaces: RecyclerView? = null
     private var ivArrow: ImageView? = null
     private var coordinates: Pair<Double, Double>? = null
+    private var markerMapping: HashMap<String, com.example.covidnow.models.Location> = HashMap()
     private var pbLoading: ProgressBar? = null
     private var mCurrentLocation: Location? = null
     private var map: GoogleMap? = null
@@ -92,6 +95,12 @@ class MapsFragment : Fragment() {
             }
         } else {
             Toast.makeText(fragment.context, "Error - Map was null!", Toast.LENGTH_SHORT).show()
+        }
+        map?.setOnMarkerClickListener {
+            Log.i(TAG, "Marker clicked")
+            // Find location associated with this marker
+            markerMapping[it.id]?.let { it1 -> adapter?.goToDetailsFromLocation(it1) }
+            return@setOnMarkerClickListener true
         }
     }
 
@@ -289,7 +298,7 @@ class MapsFragment : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                adapter?.goToDetails(viewHolder.adapterPosition)
+                adapter?.goToDetailsFromPosition(viewHolder.adapterPosition)
             }
 
             // Show blue background on swipe
@@ -344,10 +353,14 @@ class MapsFragment : Fragment() {
     fun addMarker(location: com.example.covidnow.models.Location) {
         // Add marker at current location
         val point = LatLng(location.latitude, location.longitude)
+        var bitmap: Bitmap? = null
+
         val marker = map?.addMarker(mViewModel?.createMarker(point, location))
         // Move camera to new marker
         moveCameraToLatLng(point)
         marker?.let { mViewModel?.dropPinEffect(it) }
+        // Add marker to mapping for on click event
+        marker?.id?.let { markerMapping.put(it, location) }
     }
 
     private fun hidePlaces() {

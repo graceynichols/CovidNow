@@ -55,10 +55,14 @@ class PlacesAdapter(private val fragment: MapsFragment, locations: MutableList<L
         return locations.size
     }
 
-    fun goToDetails(position: Int) {
+    fun goToDetailsFromPosition(position: Int) {
+        goToDetailsFromLocation(locations[position])
+    }
+
+    fun goToDetailsFromLocation(place: Location) {
         val result = Bundle()
         // Get location at this position
-        result.putParcelable("location", Parcels.wrap(locations[position]))
+        result.putParcelable("location", Parcels.wrap(place))
         // Start location details fragment
         val newFrag: Fragment = LocationDetailsFragment()
         newFrag.arguments = result

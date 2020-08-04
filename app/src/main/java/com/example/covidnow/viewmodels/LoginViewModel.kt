@@ -20,10 +20,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         parseRepository.createNewUser(username, password, email, signUpCallback)
     }
 
-    fun resetPassword(email: String) {
-        parseRepository.resetPassword(email)
-    }
-
     companion object {
         private const val TAG = "LoginViewModel"
     }

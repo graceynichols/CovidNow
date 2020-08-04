@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -43,26 +44,22 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         mapsFlag = false
         homeFlag = false
         profileFlag = false
-
-        val permissionsRequestHelper = PermissionsRequestHelper(this)
-
-                /*
-        if (permissionsRequestHelper.validatePermissionsLocation()){
-            // Permission granted
-            Log.i(TAG, "Permission granted")
-        } else {
-            permissionsRequestHelper.requestPermissions()
-        }
-
-        if (permissionsRequestHelper.validatePermissionsLocation()) {
-
-        }*/
         // Setup bottom nav bar
         bottomNavigationView = findViewById(R.id.bottomNavigation)
         //bottomNavigationView?.setupWithNavController(this.findNavController(R.id.nav_host_fragment))
         initializeBottomNavigationView(bottomNavigationView, this.fragmentManager)
         bottomNavigationView?.selectedItemId = R.id.action_home
 
+    }
+
+    fun hideActionBar() {
+        Log.i(TAG, "Hiding action bar")
+        supportActionBar?.hide()
+    }
+
+    fun showActionBar() {
+        Log.i(TAG, "Hiding action bar")
+        supportActionBar?.show()
     }
 
 

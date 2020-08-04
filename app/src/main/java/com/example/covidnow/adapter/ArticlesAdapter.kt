@@ -26,7 +26,7 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
         private val tvSource: TextView = itemView.findViewById(R.id.tvSource)
         private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
         private val btnShare: ImageView = itemView.findViewById(R.id.btnShare)
-        private val btnLink: ImageView = itemView.findViewById(R.id.btnLink)
+        private val btnWorld: ImageView = itemView.findViewById(R.id.btnWorld)
         fun bind(article: Article) {
             tvHeadline.text = article.headline
             tvSource.text = article.source
@@ -39,7 +39,7 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
             }
 
             // Listen for open in browser
-            btnLink.setOnClickListener {
+            btnWorld.setOnClickListener {
                 // Share article URL
                 article.url?.let { it1 -> viewInBrowser(it1) }
             }
@@ -68,7 +68,7 @@ class ArticlesAdapter(private val fragment: Fragment, private val articles: Muta
         private fun share(link: String) {
             val sharingIntent = Intent(Intent.ACTION_SEND)
             sharingIntent.type = "text/plain"
-            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Check out this article on COVID-19!")
+            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, context?.getString(R.string.sharing_body))
             sharingIntent.putExtra(Intent.EXTRA_TEXT, link)
             if (context != null) {
                 startActivity(context, Intent.createChooser(sharingIntent, "Share via"), null)

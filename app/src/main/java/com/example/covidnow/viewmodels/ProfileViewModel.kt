@@ -24,14 +24,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         return numReviews?.toInt() ?: 0
     }
 
-    fun resetPassword(email: String) {
-        parseRepository.resetPassword(email)
+    fun resetPassword(newPassword: String) {
+        //parseRepository.resetPassword(email)
+        val user = ParseUser.getCurrentUser()
+        user.setPassword(newPassword)
+        user.saveInBackground { Log.i(TAG, "User password saved") }
     }
 
     fun changeUsername(newUsername: String) {
         val user = ParseUser.getCurrentUser()
         user.username = newUsername
-        user.saveInBackground { Log.i(TAG, "User saved") }
+        user.saveInBackground { Log.i(TAG, "User username saved") }
     }
 
     fun logout(): ParseUser? {

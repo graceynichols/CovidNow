@@ -74,7 +74,7 @@
         android:layout_marginStart="0dp"
         android:layout_marginTop="291dp"
         android:layout_marginBottom="0dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:cardCornerRadius="10dp"
         app:elevation="8dp"
         tools:visibility="visible">

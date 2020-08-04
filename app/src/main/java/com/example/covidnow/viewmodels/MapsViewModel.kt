@@ -43,19 +43,23 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
     fun getPlaces(newCoords: Pair<Double, Double>, search: String?, apiKey: String?) {
         // Listen for coordinates from MapsFragment
-        Log.i(TAG, "Coordinates received from MapsFragment")
+        Log.i(TAG, "getPlaces, Coordinates received from MapsFragment")
+        Log.i(TAG, "Search: " + search.toString() + " Coords " + newCoords.toString() + " apikey $apiKey")
         search?.let {
             newCoords.first?.let { it1 ->
                 newCoords.second?.let { it2 ->
                     apiKey?.let { it3 ->
                         // Query places API for nearby places matching this query
+                        Log.i(TAG, "making FindAPlace call in places repo")
                         placesRepository.findAPlace(it, it1, it2, it3, object : JsonHttpResponseHandler() {
                             override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                                 try {
                                     Log.i(TAG, "Places API Response: $json")
                                     // Retrieve the places array from the API response
                                     val array = json.jsonObject.getJSONArray("results")
-                                    nearbyPlacesJson?.postValue(array)
+                                            //nearbyPlacesJson?.postValue(array)
+                                    Log.i(TAG, "Posting value to nearbyPlaces")
+                                    getSavedPlaces(array)
                                 } catch (e: JSONException) {
                                     e.printStackTrace()
                                     Log.i(TAG, "Error retrieving places results")
@@ -73,10 +77,12 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getSavedPlaces(jArray: JSONArray) {
+        Log.i(TAG, "in getSavedPlaces")
         // Search each place in Parse
         try {
             val finalPlaces: MutableList<Location> = ArrayList()
             for (i in 0 until jArray.length()) {
+                Log.i(TAG, i.toString())
                 val newLocation = jArray[i] as JSONObject
                 // Retrieve location's unique placeId
                 val placeId = newLocation.getString("place_id")
@@ -103,6 +109,7 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 })
             }
+
         } catch (e: Exception) {
             Log.i(TAG, "Error parsing JSON location")
         }

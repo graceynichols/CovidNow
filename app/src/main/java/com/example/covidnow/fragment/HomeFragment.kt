@@ -202,7 +202,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         if (validatePermissionsBackground()) {
              Log.i(TAG, "Background permissions granted")
                 createLocationRequest()
-            mFusedLocationClient?.let { requestLocationUpdates(it) }
+            // TODO uncomment if you want location updates
+            //mFusedLocationClient?.let { requestLocationUpdates(it) }
         }
     }
 

@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +20,8 @@ import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -32,7 +33,7 @@ import com.example.covidnow.R
 import com.example.covidnow.adapter.PlacesAdapter
 import com.example.covidnow.helpers.RecyclerViewSwipeListener
 import com.example.covidnow.viewmodels.MapsViewModel
-import com.google.android.gms.location.*
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -61,7 +62,18 @@ class MapsFragment : Fragment() {
     private var mViewModel: MapsViewModel? = null
     private val permissionFineLocation = Manifest.permission.ACCESS_FINE_LOCATION
     private val permissionCoarseLocation = Manifest.permission.ACCESS_COARSE_LOCATION
+    private var mapFragment: SupportMapFragment? = null
     private val REQUEST_CODE_LOCATION = 100
+    private var lastSearch: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(TAG, "OnCreate")
+        super.onCreate(savedInstanceState)
+        retainInstance = true //Will ignore onDestroy Method (Nested Fragments no need this if parent have it)
+        // Set view model
+        mViewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)
+    }
+
     private val callback = OnMapReadyCallback { googleMap ->
         /**
          * Manipulates the map once available.
@@ -100,15 +112,74 @@ class MapsFragment : Fragment() {
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         ivArrow = view.findViewById(R.id.ivArrow)
 
-        var flag = true
 
-        if (validatePermissionsLocation()){
-            Log.i(TAG, "Permission granted")
-            getMyLocation()
-        }
-        else{
-            Log.i(TAG, "Permission not granted")
-            //requestPermissions()
+        mViewModel?.getNearbyPlacesList()?.removeObservers(viewLifecycleOwner)
+
+
+        // Setup recyclerview of places
+        initializeRvPlaces(rvPlaces)
+
+        // Check if state has been saved already
+        if (coordinates == null) {
+            Log.i(TAG, "Coordinates are null")
+            if (validatePermissionsLocation()){
+                Log.i(TAG, "Permission granted")
+                getMyLocation()
+            }
+            else{
+                Log.i(TAG, "Permission not granted")
+                requestPermissions()
+            }
+            card?.visibility = View.GONE
+
+            // Setup map view
+            mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+            mapFragment?.getMapAsync(callback)
+
+            // Listen for current coordinates to move camera
+            val coordinatesObserver: Observer<Pair<Double, Double>> = Observer { it ->
+                Log.i(TAG, "Coordinates received from view model")
+                // Move camera to current location
+                coordinates = it
+                it.first?.let { it1 -> it.second?.let { it2 -> moveCameraToCoordinates(it1, it2) } }
+            }
+            mViewModel?.getCoordinates()?.observe(viewLifecycleOwner, coordinatesObserver)
+
+            // Listen for location to be retrieved for quick review
+            val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
+                Log.i(TAG, "Location received from view model as Location")
+                // Listen for user to press quick review button
+                btnQuickReview?.setOnClickListener(View.OnClickListener {
+                    Log.i(TAG, "Quick Review button clicked!")
+                    // Location ready to be used for quick review
+                    goQuickReview(mViewModel?.getFinalLocation()?.value)
+                })
+            }
+            // Listen for location to be ready to be reviewed
+            mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+
+        } else {
+            Log.i(TAG, "Coordinates are not null")
+            if (lastSearch != null) {
+                Log.i(TAG, "User has already searched, load searches")
+                // User has already searched
+                card?.visibility = View.VISIBLE
+                Log.i(TAG, mViewModel?.getNearbyPlacesList()?.value.toString())
+                Log.i(TAG, adapter.toString())
+                adapter?.addAll(mViewModel?.getNearbyPlacesList()?.value as MutableList<com.example.covidnow.models.Location>)
+
+                // Listen for quick review button
+                btnQuickReview?.setOnClickListener(View.OnClickListener {
+                    Log.i(TAG, "Quick Review button clicked!")
+                    // Location ready to be used for quick review
+                    goQuickReview(mViewModel?.getFinalLocation()?.value)
+                })
+
+            } else {
+                Log.i(TAG, "No searches to show")
+                // Make sure recyclerview is hidden
+                card?.visibility = View.GONE
+            }
         }
 
         if (savedInstanceState != null && savedInstanceState.keySet().contains(KEY_LOCATION)) {
@@ -117,90 +188,83 @@ class MapsFragment : Fragment() {
             Log.i(TAG, "mCurrentLocation not null")
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION)
         }
-        // Set view model
-        mViewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)
-
-        // Setup recyclerview of places
-        initializeRvPlaces(rvPlaces)
-
-        // Setup map view
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
-
-        // Listen for location to be retrieved for quick review
-        val coordinatesObserver: Observer<Pair<Double, Double>> = Observer { it ->
-            Log.i(TAG, "Coordinates received from view model")
-            // Move camera to current location
-            coordinates = it
-            it.first?.let { it1 -> it.second?.let { it2 -> moveCameraToCoordinates(it1, it2) } }
-        }
-        mViewModel?.getCoordinates()?.observe(viewLifecycleOwner, coordinatesObserver)
 
         // Listen for searches
         btnSearch?.setOnClickListener(View.OnClickListener {
-            // Show progress bar
+            // Make sure we have current location
             if (coordinates == null) {
                 Toast.makeText(context, "Error, current location not found yet", Toast.LENGTH_SHORT).show()
                 return@OnClickListener
             }
+
             // Get user's query
-            val search = etSearch?.text.toString()
-            // Clear search box
-            etSearch?.setText("")
-            if (search.isEmpty()) {
-                Toast.makeText(context, "Must provide search query", Toast.LENGTH_SHORT).show()
-            } else {
-                // Automatically put keyboard away
-                val mgr = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                mgr.hideSoftInputFromWindow(etSearch?.windowToken, 0)
-
-                // Show progress bar
+            if (etSearch?.text.toString() == lastSearch) {
                 pbLoading?.visibility = View.VISIBLE
-
-                // Retrieve nearby places
-                if (coordinates != null) {
-                    mViewModel?.getPlaces(coordinates as Pair<Double, Double>, search, getString(R.string.google_maps_key))
+                // Same as last query, don't need to search again
+                if (card?.visibility == View.GONE) {
+                    // Show recyclerview if it's been hidden
+                    showPlaces()
+                }
+                pbLoading?.visibility = View.GONE
+            } else {
+                // Slide down recyclerview if it's up
+                if (card?.visibility == View.VISIBLE) {
+                    hidePlaces()
                 }
 
-                // Listen for nearby places JSON from PlacesRepository
-                val placesJSONObserver: Observer<JSONArray> = Observer<JSONArray> { jArray -> // Places JSON received from view model
-                    Log.i(TAG, "Places JSON received from PlacesRepo")
-                    mViewModel?.getSavedPlaces(jArray as JSONArray)
+                if (adapter != null) {
+                    Log.i(TAG, "Clearing adapter")
+                    adapter?.clear()
                 }
-                // Listen for Places API call to finish
-                mViewModel?.getNearbyPlacesJson()?.observe(viewLifecycleOwner, placesJSONObserver)
-                val placesListObserver: Observer<List<com.example.covidnow.models.Location>> = Observer<List<com.example.covidnow.models.Location>> { newPlaces -> // List of places ready to be given to recyclerview
-                    Log.i(TAG, "Places list received from ParseRepo")
-                    adapter?.addAll(newPlaces as MutableList<com.example.covidnow.models.Location>)
-                    // Hide progress bar
-                    pbLoading?.visibility = View.GONE
-                    // Make places list slide up
-                    if (flag) {
-                        showPlaces()
+
+                lastSearch = etSearch?.text.toString()
+
+                if ((lastSearch as String).isEmpty()) {
+                    Toast.makeText(context, "Must provide search query", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Automatically put keyboard away
+                    val mgr = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    mgr.hideSoftInputFromWindow(etSearch?.windowToken, 0)
+
+                    // Show progress bar
+                    pbLoading?.visibility = View.VISIBLE
+
+                    // Retrieve nearby places
+                    if (coordinates != null) {
+                        Log.i(TAG, "Coordinates != null")
+                        mViewModel?.getPlaces(coordinates as Pair<Double, Double>, lastSearch, getString(R.string.google_maps_key))
                     }
-                    flag = false
+
+                    // Listen for nearby places JSON from PlacesRepository
+                    val placesJSONObserver: Observer<JSONArray> = Observer<JSONArray> { jArray -> // Places JSON received from view model
+                        Log.i(TAG, "Places JSON received from PlacesRepo")
+                        mViewModel?.getSavedPlaces(jArray as JSONArray)
+
+                    }
+                    // Listen for Places API call to finish
+                    mViewModel?.getNearbyPlacesJson()?.observe(viewLifecycleOwner, placesJSONObserver)
+
+                    val placesListObserver: Observer<List<com.example.covidnow.models.Location>> = Observer<List<com.example.covidnow.models.Location>> { newPlaces -> // List of places ready to be given to recyclerview
+                        Log.i(TAG, "Places list received from ParseRepo")
+                        if (newPlaces.isNotEmpty()) {
+                            adapter?.addAll(newPlaces as MutableList<com.example.covidnow.models.Location>)
+                            // Hide progress bar
+                            pbLoading?.visibility = View.GONE
+                            // Make places list slide up
+                            showPlaces()
+                        }
+                    }
+                    // Listen for List<covidnow.location> of saved places received from ParseRepo
+                    mViewModel?.getNearbyPlacesList()?.observe(viewLifecycleOwner, placesListObserver)
 
                 }
-                // Listen for List<covidnow.location> of saved places received from ParseRepo
-                mViewModel?.getNearbyPlacesList()?.observe(viewLifecycleOwner, placesListObserver)
             }
         })
 
         // Listen for arrow button to show rvPlaces
         ivArrow?.setOnClickListener(View.OnClickListener { showPlaces() })
 
-        // Listen for location to be retrieved for quick review
-        val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
-            Log.i(TAG, "Location received from view model as Location")
-            // Listen for user to press quick review button
-            btnQuickReview?.setOnClickListener(View.OnClickListener {
-                Log.i(TAG, "Quick Review button clicked!")
-                // Location ready to be used for quick review
-                goQuickReview(mViewModel?.getFinalLocation()?.value)
-            })
-        }
-        // Listen for location to be ready to be reviewed
-        mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+
     }
 
     private fun initializeRvPlaces(rvPlaces: RecyclerView?) {

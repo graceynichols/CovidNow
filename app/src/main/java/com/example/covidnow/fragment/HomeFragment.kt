@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -49,15 +50,19 @@ import com.parse.ParseUser
 import com.parse.SaveCallback
 import org.json.JSONObject
 import org.parceler.Parcels
+import java.math.BigDecimal
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.round
 
 
 class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
-    private val chartDescription = "Cases for the Past Week"
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
+    private var ivArrow: ImageView? = null
+    private var tvPercentChange: TextView? = null
     private var btnQuickReview: FloatingActionButton? = null
     private var chart: LineChart? = null
     private var pbLoading: ProgressBar? = null
@@ -93,8 +98,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         tvCases = view.findViewById(R.id.tvCases)
         pbLoading = view.findViewById(R.id.pbLoading)
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
+        ivArrow = view.findViewById(R.id.ivArrow)
+        tvPercentChange = view.findViewById(R.id.tvPercentChange)
         chart = view.findViewById(R.id.chart)
-        chart?.setNoDataText("Chart loading")
+        chart?.setNoDataText("")
 
         // Initialize recyclerview
         initializeRvArticles(rvArticles)
@@ -113,7 +120,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put
@@ -184,22 +191,47 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         val xAxis: XAxis = chart?.xAxis as XAxis
         xAxis.granularity = 1f // minimum axis-step (interval) is 1
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
         // Style chart
-        chart?.description?.text = chartDescription
+        chart?.description?.text = "Cases in " + mViewModel?.getStateName() + " for the past week"
+        chart?.description?.textSize = 10F
 
-        chart?.setDrawGridBackground(false)
         chart?.axisRight?.setDrawLabels(false)
 
         xAxis.valueFormatter = formatter
 
         // Assign data to chart
-        val dataSet = LineDataSet(entries, "Label")
+        val dataSet = LineDataSet(entries, "# of Cases")
         dataSet.valueTextSize = 0f
         val lineData = LineData(dataSet)
         chart?.data = lineData
         // Refresh chart
         chart?.invalidate()
+
+        // Set "percent change" on top
+        setupPercentChange()
+
         pbLoading?.visibility = View.GONE
+    }
+
+    private fun setupPercentChange() {
+        val suffix = "% from last week"
+        var finalText = ""
+        // Round to 3 decimal points
+        val percentChange = round((mViewModel?.getChangeInCases() as Float) * 1000.0) / 1000.0
+        if (percentChange < 0) {
+            // Cases are down!
+            finalText = "Down " + abs(percentChange) + suffix
+            // Show green down arrow
+            ivArrow?.setImageResource(R.drawable.ic_arrow_circle_down_black_18dp)
+        } else {
+            // Cases are up :(
+            finalText = "Up $percentChange$suffix"
+            // Show red up arrow
+            ivArrow?.setImageResource(R.drawable.ic_arrow_circle_up_black_18dp)
+        }
+        tvPercentChange?.text = finalText
     }
 
     private fun showAlertDialog(location: Location) {

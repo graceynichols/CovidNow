@@ -10,7 +10,7 @@
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:layout_below="@id/tvCases" />
+        android:layout_below="@id/ivArrow" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnQuickReview"
@@ -62,4 +62,29 @@
         android:layout_alignParentStart="true"
         android:layout_marginTop="0dp"
         android:padding="8dp" />
+
+    <ImageView
+        android:id="@+id/ivArrow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/tvCases"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="false"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="0dp"
+        android:contentDescription="@string/arrow"
+        android:visibility="visible"
+        tools:src="@drawable/ic_arrow_circle_up_black_18dp"
+        tools:srcCompat="@drawable/ic_arrow_circle_up_black_18dp" />
+
+    <TextView
+        android:id="@+id/tvPercentChange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvCases"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="9dp"
+        android:layout_toEndOf="@+id/ivArrow"
+        android:textSize="18sp"
+        tools:text="% change" />
 </RelativeLayout>

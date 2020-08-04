@@ -29,6 +29,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var caseHistory: MutableLiveData<List<Pair<String, Int>>>? = null
     private var jsonLocation: MutableLiveData<JSONObject>? = null
     private var finalLocation: MutableLiveData<Location>? = null
+    private var changeInCases: Float? = null
+    private var stateName: String? = null
     private val newsRepository: NewsRepository = NewsRepository()
     private val parseRepository: ParseRepository = ParseRepository()
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
@@ -153,7 +155,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
                         // Format the state/province + case count string
                         val cases = stateInfo.second.toString() + CASE_COUNT_STR + caseNumber
-
+                        stateName = stateInfo.second.toString()
                         // Post case value to case count
                         caseCount?.postValue(cases)
                         val history = stats.getJSONArray("history")
@@ -197,6 +199,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun processHistory(history: JSONArray) {
+        var lastWeekData = 1
+        var change = 0
         // Save data as date, case count pairs
         val historicalData = ArrayList<Pair<String, Int>>()
         // Get past week of data
@@ -208,11 +212,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 // TODO change to simple date
                 val date = pastDay.getString("date").substring(5, 10)
                 val cases = pastDay.getInt("confirmed")
+                if (i == 0) {
+                    // Most recent data
+                    change += cases
+                } else if (i == CASE_HISTORY_LIMIT - 1) {
+                    // Last week's data
+                    change -= cases
+                    lastWeekData = cases
+                }
                 historicalData.add(Pair.create(date, cases))
             } else {
                 break
             }
         }
+        // Calculate percent change
+        changeInCases = change.toFloat() / lastWeekData.toFloat()
         // Flip history order
         caseHistory?.postValue(historicalData.reversed())
     }
@@ -306,6 +320,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun giveUserMessages(currentUser: ParseUser) {
         parseRepository.giveUserMessagesObject(currentUser)
+    }
+
+    fun getStateName(): String? {
+        return stateName
+    }
+
+    fun getChangeInCases(): Float? {
+        return changeInCases
     }
 
     companion object {

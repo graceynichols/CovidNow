@@ -26,5 +26,6 @@
     <string name="action_share">action_share</string>
     <string name="action_link">action_link</string>
     <string name="sharing_body">Check out this article on COVID-19!</string>
+    <string name="arrow">arrow</string>
 
 </resources>

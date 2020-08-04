@@ -33,7 +33,14 @@ import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.AxisBase
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -46,6 +53,7 @@ import java.util.*
 
 
 class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
+    private val chartDescription = "Cases for the Past Week"
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
@@ -86,9 +94,8 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         pbLoading = view.findViewById(R.id.pbLoading)
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         chart = view.findViewById(R.id.chart)
+        chart?.setNoDataText("Chart loading")
 
-        // Chart past cases
-        setupChart()
         // Initialize recyclerview
         initializeRvArticles(rvArticles)
 
@@ -106,7 +113,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put
@@ -119,6 +126,15 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         // Listen for case count to be put by NewsRepo
         mViewModel?.getCaseCount()?.observe(viewLifecycleOwner, caseCountObserver)
+
+        // Listen for case history from news API
+        val caseHistoryObserver: Observer<List<Pair<String, Int>>> = Observer<List<Pair<String, Int>>> { caseHistory -> // Case count is ready to be shown
+            Log.i(TAG, "case history received from View Model")
+            // Chart past cases
+            setupChart(caseHistory)
+        }
+        // Listen for case count to be put by NewsRepo
+        mViewModel?.getCaseHistory()?.observe(viewLifecycleOwner, caseHistoryObserver)
 
         // Listen for news to be ready to bind to recyclerview
         val newsObserver: Observer<List<Article>> = Observer { news -> // News is ready to be added to recyclerview
@@ -147,9 +163,43 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
     }
 
-    private fun setupChart() {
+    private fun setupChart(caseHistory: List<Pair<String, Int>>) {
+        if (pbLoading?.visibility == View.GONE) {
+            pbLoading?.visibility = View.VISIBLE
+        }
+        val dates = ArrayList<String>()
         val entries = ArrayList<Entry>()
+        // Loop through case history
+        for (i in caseHistory.indices) {
+            // TODO add date instead of index
+            caseHistory[i].first?.let { dates.add(it) }
+            caseHistory[i].second?.toFloat()?.let { Entry(i.toFloat(), it) }?.let { entries.add(it) }
+        }
 
+        // Make dates the X axis label
+        val formatter: ValueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String? {
+                return dates.get(value.toInt())
+            }
+        }
+        val xAxis: XAxis = chart?.xAxis as XAxis
+        xAxis.granularity = 1f // minimum axis-step (interval) is 1
+        // Style chart
+        chart?.description?.text = chartDescription
+
+        chart?.setDrawGridBackground(false)
+        chart?.axisRight?.setDrawLabels(false)
+
+        xAxis.valueFormatter = formatter
+
+        // Assign data to chart
+        val dataSet = LineDataSet(entries, "Label")
+        dataSet.valueTextSize = 0f
+        val lineData = LineData(dataSet)
+        chart?.data = lineData
+        // Refresh chart
+        chart?.invalidate()
+        pbLoading?.visibility = View.GONE
     }
 
     private fun showAlertDialog(location: Location) {
@@ -254,7 +304,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-
     private fun requestLocationUpdates(locationClient: FusedLocationProviderClient) {
         try {
             Log.i(TAG, "Starting location updates")
@@ -265,7 +314,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             e.printStackTrace()
         }
     }
-
 
     private fun requestPermissions(){
         Log.i(TAG, "Requesting permissions")

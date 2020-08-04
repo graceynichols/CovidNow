@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.covidnow.R
@@ -28,6 +29,7 @@ class LocationDetailsFragment : Fragment() {
     private var ivHotspot: ImageView? = null
     private var ivImage: ImageView? = null
     private var btnBack: ImageView? = null
+    private var toolbar: Toolbar? = null
 
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
@@ -47,6 +49,7 @@ class LocationDetailsFragment : Fragment() {
         tvHotspotDate = view.findViewById(R.id.tvHotspotDate)
         ivHotspot = view.findViewById(R.id.ivHotspot)
         ivImage = view.findViewById(R.id.ivImage)
+        toolbar = view.findViewById(R.id.my_toolbar)
         pbLoading = view.findViewById(R.id.pbLoading)
 
         // Show progress bar
@@ -87,8 +90,17 @@ class LocationDetailsFragment : Fragment() {
     }
 
     private fun setupToolbar(location: Location?) {
-        btnBack = view?.findViewById(R.id.btnBack)
         btnEdit = view?.findViewById(R.id.btnEdit)
+
+        // hide vanity action bar
+        (activity as MainActivity).hideActionBar()
+        //toolbar?.inflateMenu(R.menu.article_details_toolbar)
+        toolbar?.let { (activity as MainActivity).setActionBar(it) }
+        toolbar?.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp)
+        toolbar?.setNavigationOnClickListener {
+            Log.i(TAG, "Going back to maps")
+            fragmentManager?.popBackStackImmediate()
+        }
 
         // Listen for the compose review button
         btnEdit?.setOnClickListener(View.OnClickListener {
@@ -102,12 +114,6 @@ class LocationDetailsFragment : Fragment() {
             fragmentManager?.beginTransaction()?.replace(R.id.flContainer,
                     newFrag)?.addToBackStack("LocationDetailsFragment")?.commit()
         })
-
-        // Listen for custom back button
-        btnBack?.setOnClickListener {
-            Log.i(TAG, "Going back to maps")
-            fragmentManager?.popBackStackImmediate()
-        }
     }
 
     companion object {

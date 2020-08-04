@@ -101,28 +101,17 @@
         android:src="@drawable/image_placeholder"
         tools:src="@tools:sample/avatars" />
 
-    <ImageView
-        android:id="@+id/btnBack"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_alignBottom="@+id/my_toolbar"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="4dp"
-        android:elevation="5dp"
-        android:src="@drawable/ic_arrow_left_black_18dp" />
-
 
     <ImageView
         android:id="@+id/btnEdit"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/my_toolbar"
         android:layout_alignParentStart="false"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="17dp"
         android:elevation="5dp"
-        android:src="@drawable/baseline_edit_black_18dp" />
+        android:src="@drawable/ic_edit_black_24dp" />
 
 </RelativeLayout>

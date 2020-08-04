@@ -84,12 +84,12 @@ class ArticleDetailsFragment : Fragment() {
         (activity as MainActivity).hideActionBar()
         //toolbar?.inflateMenu(R.menu.article_details_toolbar)
         toolbar?.let { (activity as MainActivity).setActionBar(it) }
+        // Set back button
         toolbar?.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp)
         toolbar?.setNavigationOnClickListener {
             Log.i(TAG, "Back button clicked")
             goHome()
         }
-       // toolbar?
 
         btnShare = view?.findViewById(R.id.btnShare2)
         btnLink = view?.findViewById(R.id.btnLink2)

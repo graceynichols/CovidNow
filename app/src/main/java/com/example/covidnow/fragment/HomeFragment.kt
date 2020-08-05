@@ -131,7 +131,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
 
         // Listen for JSON location to be put
-        mViewModel?.getJsonLocation()?.observe(fragment.viewLifecycleOwner, locObserver)
+        mViewModel?.getJsonLocation()?.observe(viewLifecycleOwner, locObserver)
 
         // Listen for case count from news API
         val caseCountObserver: Observer<String> = Observer<String> { caseCount -> // Case count is ready to be shown

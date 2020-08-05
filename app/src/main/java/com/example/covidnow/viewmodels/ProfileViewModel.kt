@@ -84,6 +84,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             for (i in 0 until visitorHistory.length()) {
                 // Get the user's object ID
                 val objectId: String = (visitorHistory.get(i) as JSONObject).getString(ParseRepository.KEY_OBJECT_ID)
+                Log.i(TAG, "Chekcing user $objectId")
                 // Make sure this isn't just the current user
                 if (objectId != currentUser) {
                     // Find if exposed user and this visitor were there on the same day
@@ -98,6 +99,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
         } else {
             // No visitor history saved
+            Log.i(TAG, "No visitor history saved")
             location.visitors = JSONArray()
         }
     }

@@ -92,7 +92,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 // This is the same location
                 if (parseRepository.differenceInHours(ParseRepository.jsonObjectToDate(mostRecentElement), Calendar.getInstance().time) == RECORDING_TIME_LIMIT) {
                     // Most recent entry was within the hour, don't add to history
-                    return
+                    Log.i(TAG, "Most recent visit was within the hour, don't add to history")
+                    // TODO comment out when we don't wanna record repeats
+                    //return
 
                 }
             }

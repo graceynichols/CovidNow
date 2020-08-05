@@ -78,8 +78,8 @@ class ProfileFragment : Fragment() {
         rvHistory?.addItemDecoration(itemDecoration)
 
         // Set up item delete swipe listener
-        val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter as HistoryAdapter))
-        itemTouchHelper.attachToRecyclerView(rvHistory)
+        val itemTouchHelper = mViewModel?.getParseRepo()?.let { SwipeToDeleteCallback(adapter as HistoryAdapter, it) }?.let { ItemTouchHelper(it) }
+        itemTouchHelper?.attachToRecyclerView(rvHistory)
 
         // Get this user's exposure messages for rvHistory
         mViewModel?.getMessages()?.let { adapter?.addAll(it) }

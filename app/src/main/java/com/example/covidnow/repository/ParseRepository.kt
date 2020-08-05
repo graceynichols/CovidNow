@@ -83,6 +83,15 @@ class ParseRepository {
         return null
     }
 
+    fun deleteFromUserHistory(position: Int) {
+        Log.i(TAG, "Removing this element: $position from history")
+        val messages =  getUserMessages()
+        val newHistory = messages?.history
+        newHistory?.remove(position)
+        messages?.history = newHistory
+        getUserMessages()?.saveInBackground()
+    }
+
     fun addToUserHistory(placeId: String, saveCallback: SaveCallback?): JSONArray {
         // Add this location to user's location history
         Log.i(TAG, "Adding this location to user's history")

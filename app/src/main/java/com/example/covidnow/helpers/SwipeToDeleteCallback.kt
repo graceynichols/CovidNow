@@ -9,10 +9,12 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.covidnow.R
 import com.example.covidnow.adapter.HistoryAdapter
+import com.example.covidnow.repository.ParseRepository
 
-class SwipeToDeleteCallback(private val mAdapter: HistoryAdapter) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+class SwipeToDeleteCallback(private val mAdapter: HistoryAdapter, pRepository: ParseRepository) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
     private val icon: Drawable?
     private val background: ColorDrawable
+    private val parseRepository = pRepository
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
         // used for up and down movements
         return false
@@ -21,6 +23,7 @@ class SwipeToDeleteCallback(private val mAdapter: HistoryAdapter) : ItemTouchHel
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         val position = viewHolder.adapterPosition
         mAdapter.deleteItem(position)
+        parseRepository.deleteFromUserHistory(position)
     }
 
     override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {

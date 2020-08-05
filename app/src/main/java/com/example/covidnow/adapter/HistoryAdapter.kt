@@ -17,6 +17,7 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.repository.ParseRepository
 import com.google.android.material.snackbar.Snackbar
 import com.parse.GetCallback
+import com.parse.ParseUser
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
@@ -82,6 +83,7 @@ class HistoryAdapter(private val fragment: Fragment, private val exposures: Muta
         exposures.removeAt(position);
         notifyItemRemoved(position);
         showUndoSnackbar();
+
     }
 
     private fun showUndoSnackbar() {

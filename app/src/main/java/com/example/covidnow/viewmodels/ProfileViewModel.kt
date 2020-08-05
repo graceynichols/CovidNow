@@ -18,6 +18,10 @@ import java.util.*
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val parseRepository: ParseRepository = ParseRepository()
 
+    fun getParseRepo(): ParseRepository {
+        return parseRepository
+    }
+
     fun getNumReviews(user: ParseUser): Int {
         // Retrieve user's number of views from Parse
         val numReviews = user.getNumber(ParseRepository.KEY_NUM_REVIEWS)

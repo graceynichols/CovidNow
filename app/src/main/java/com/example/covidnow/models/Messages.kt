@@ -16,9 +16,19 @@ class Messages : ParseObject() {
             }
         }
 
+    var alert: Boolean?
+        get() = getBoolean(KEY_ALERT)
+        set(newAlert) {
+            if (newAlert != null) {
+                put(KEY_ALERT, newAlert)
+            }
+        }
+
+
     companion object {
         private const val TAG = "Messages"
         const val KEY_HISTORY = "history"
+        const val KEY_ALERT = "alert"
 
         @JvmStatic
         fun createMessages(): Messages {

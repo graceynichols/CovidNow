@@ -24,21 +24,30 @@ import java.util.*
 
 class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val parseRepository = ParseRepository()
         Log.i(TAG, "On receive")
         val action = intent.action
+        // Check if user has been exposed
+        if (parseRepository.checkIfExposed() == true) {
+            // User has been exposed
+            Log.i(TAG, "User has been exposed")
+            exposureNotification(parseRepository, context)
+        }
+
+        // Check if user is in a hotspot
         if (ACTION_PROCESS_UPDATES == action) {
             val result = LocationResult.extractResult(intent)
             if (result != null) {
                 val locations = result.locations
                 // Query this location's google place ID
-                findById(locations, context)
+                findById(locations, context, parseRepository)
             }
         }
     }
 
-    private fun findById(locations: List<Location>, context: Context) {
+    private fun findById(locations: List<Location>, context: Context, parseRepository: ParseRepository) {
         val geocodingRepository = GeocodingRepository()
-        val parseRepository = ParseRepository()
+
         geocodingRepository.queryGeocodeLocation(locations[0].latitude, locations[0].longitude, context.getString(R.string.google_maps_key), object : JsonHttpResponseHandler() {
             override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                 try {
@@ -115,7 +124,6 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     // Not saved, can't be a hotspot
                     Log.i(TAG, "Current location not saved in Parse")
                 }
-                // TODO check if county has a lot of cases
             })
         }
     }
@@ -130,6 +138,12 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
         Utils.sendNotification(context, "Your current location is marked as a hotspot")
         Utils.getLocationUpdatesResult(context)?.let { Log.i(TAG, it) }
     }
+
+    private fun exposureNotification(parseRepository: ParseRepository, context: Context) {
+        Log.i(TAG, "User has been exposed, they are being notified")
+        Utils.sendNotification(context, "You have been exposed to a user with COVID-19 in the past 14 days")
+    }
+
 
     companion object {
         private const val TAG = "LUBroadcastReceiver"

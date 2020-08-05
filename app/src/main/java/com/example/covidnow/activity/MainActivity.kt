@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         private var mapsFragment: MapsFragment? = null
         private var homeFragment: HomeFragment? = null
         private var profileFragment: ProfileFragment? = null
+        private var bottomNav: BottomNavigationView? = null
         private var profileFlag: Boolean = false
         private var mapsFlag: Boolean = false
         private var homeFlag: Boolean = false
@@ -97,6 +98,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         private var ft: FragmentTransaction? = null
 
         fun initializeBottomNavigationView(bottomNavigationView: BottomNavigationView?, fManager: FragmentManager) {
+            bottomNav = bottomNavigationView
             bottomNavigationView?.setOnNavigationItemSelectedListener { menuItem ->
                 ft = fManager.beginTransaction()
                 fragmentManager = fManager
@@ -118,7 +120,12 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             }
         }
 
-        private fun displayProfile() {
+        @JvmStatic
+        fun showProfileFromAlert() {
+            bottomNav?.selectedItemId = R.id.action_profile
+        }
+
+        fun displayProfile() {
             if (homeFlag) {
                 homeFragment = fragmentManager?.findFragmentByTag(HOME_TAG) as HomeFragment
                 if ((homeFragment as HomeFragment).isAdded) {

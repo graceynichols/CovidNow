@@ -10,6 +10,7 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Article.Companion.fromJson
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.example.covidnow.repository.GeocodingRepository
 import com.example.covidnow.repository.NewsRepository
 import com.example.covidnow.repository.ParseRepository
@@ -328,6 +329,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getChangeInCases(): Float? {
         return changeInCases
+    }
+
+    fun getMessages(): Messages? {
+        // Retrieve this users exposure messages
+        return parseRepository.getUserMessages()
     }
 
     companion object {

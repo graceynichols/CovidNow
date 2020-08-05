@@ -226,6 +226,7 @@ class ParseRepository {
         newMessage.put(KEY_DATE, onDate.toString())
         // Add to messages object's array
         messagesObject.history = messagesHistory.put(0, newMessage)
+        messagesObject.alert = true
         messagesObject.saveInBackground { Log.i(TAG, "Message saved") }
     }
 

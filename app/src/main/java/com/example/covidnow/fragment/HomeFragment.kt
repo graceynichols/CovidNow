@@ -26,18 +26,18 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.covidnow.R
 import com.example.covidnow.adapter.ArticlesAdapter
+import com.example.covidnow.fragment.alert_dialogs.ExposureAlertDialogFragment
 import com.example.covidnow.fragment.alert_dialogs.HotspotAlertDialogFragment
 import com.example.covidnow.helpers.Utils
 import com.example.covidnow.models.Article
 import com.example.covidnow.models.Location
+import com.example.covidnow.models.Messages
 import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.AxisBase
-import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -50,7 +50,6 @@ import com.parse.ParseUser
 import com.parse.SaveCallback
 import org.json.JSONObject
 import org.parceler.Parcels
-import java.math.BigDecimal
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.round
@@ -162,7 +161,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             Log.i(TAG, "Location received from view model as Location")
             if (mViewModel?.getFinalLocation()?.value?.isHotspot == true) {
                 // Show user alert dialog that this is a hotspot
-                showAlertDialog(mViewModel?.getFinalLocation()?.value as Location)
+                showHotspotAlertDialog(mViewModel?.getFinalLocation()?.value as Location)
             }
             btnQuickReview?.setOnClickListener(View.OnClickListener {
                 Log.i(TAG, "Quick Review button clicked!")
@@ -171,6 +170,12 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         // Listen for news to be ready to post on home screen
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+
+        // Check if this user has been exposed recently
+        val messages = mViewModel?.getMessages()
+        if (messages?.alert == true) {
+            showExposureAlertDialog(messages)
+        }
     }
 
     private fun setupChart(caseHistory: List<Pair<String, Int>>) {
@@ -249,8 +254,16 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
     }
 
-    private fun showAlertDialog(location: Location) {
+    private fun showHotspotAlertDialog(location: Location) {
         val alertDialog: HotspotAlertDialogFragment = HotspotAlertDialogFragment.newInstance("Warning", location)
+        fragmentManager?.let { alertDialog.show(it, "fragment_alert") };
+    }
+
+    private fun showExposureAlertDialog(messages: Messages) {
+        // Make alert false since they've seen it now
+        messages.alert = false
+        messages.saveInBackground()
+        val alertDialog: ExposureAlertDialogFragment = ExposureAlertDialogFragment.newInstance()
         fragmentManager?.let { alertDialog.show(it, "fragment_alert") };
     }
 

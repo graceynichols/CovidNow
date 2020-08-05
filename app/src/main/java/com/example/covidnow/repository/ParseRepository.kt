@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import com.example.covidnow.models.Location
 import com.example.covidnow.models.Messages
+import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.viewmodels.ProfileViewModel
 import com.parse.*
 import org.json.JSONArray
@@ -192,6 +193,18 @@ class ParseRepository {
         return visitorHistory
     }
 
+    fun checkIfExposed(): Boolean? {
+        Log.i(TAG, "Checking if exposed")
+        Log.i(TAG, getUserMessages()?.alert.toString())
+        return getUserMessages()?.alert
+}
+
+    fun setNotExposed() {
+        val messages = getUserMessages()
+        messages?.alert = false
+        messages?.saveInBackground()
+    }
+
     fun differenceInDays(currDate: Date, otherDate: Date): Int {
         return abs(TimeUnit.DAYS.convert(currDate.time - otherDate.time, TimeUnit.MILLISECONDS)).toInt()
     }
@@ -202,7 +215,7 @@ class ParseRepository {
 
     private fun addMessage(user: ParseUser, location: Location, onDate: Date) {
         // Add this location and date as a "message" to their messages
-        val messagesObject: Messages = user.getParseObject(KEY_MESSAGES)?.fetchIfNeeded() as Messages
+        val messagesObject: Messages = user.getParseObject(KEY_MESSAGES)?.fetch() as Messages
         val messagesHistory: JSONArray = messagesObject.history as JSONArray
 
         // Check if they've already been notified for this place and day
@@ -236,7 +249,7 @@ class ParseRepository {
     }
 
     fun getUserMessages(): Messages? {
-        return ParseUser.getCurrentUser().getParseObject(KEY_MESSAGES)?.fetchIfNeeded()
+        return ParseUser.getCurrentUser().getParseObject(KEY_MESSAGES)?.fetch()
     }
 
     fun resetPassword(email: String) {

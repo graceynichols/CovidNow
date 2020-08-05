@@ -121,9 +121,20 @@ class MapsFragment : Fragment() {
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         ivArrow = view.findViewById(R.id.ivArrow)
 
-
         mViewModel?.getNearbyPlacesList()?.removeObservers(viewLifecycleOwner)
 
+        // Listen for location to be retrieved for quick review
+        val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
+            Log.i(TAG, "Location received from view model as Location")
+            // Listen for user to press quick review button
+            btnQuickReview?.setOnClickListener(View.OnClickListener {
+                Log.i(TAG, "Quick Review button clicked!")
+                // Location ready to be used for quick review
+                goQuickReview(mViewModel?.getFinalLocation()?.value)
+            })
+        }
+        // Listen for location to be ready to be reviewed
+        mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
 
         // Setup recyclerview of places
         initializeRvPlaces(rvPlaces)
@@ -154,18 +165,6 @@ class MapsFragment : Fragment() {
             }
             mViewModel?.getCoordinates()?.observe(viewLifecycleOwner, coordinatesObserver)
 
-            // Listen for location to be retrieved for quick review
-            val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
-                Log.i(TAG, "Location received from view model as Location")
-                // Listen for user to press quick review button
-                btnQuickReview?.setOnClickListener(View.OnClickListener {
-                    Log.i(TAG, "Quick Review button clicked!")
-                    // Location ready to be used for quick review
-                    goQuickReview(mViewModel?.getFinalLocation()?.value)
-                })
-            }
-            // Listen for location to be ready to be reviewed
-            mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
 
         } else {
             Log.i(TAG, "Coordinates are not null")

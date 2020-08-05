@@ -27,11 +27,13 @@ class HotspotAlertDialogFragment : DialogFragment() {
             Log.i(TAG, "Marking location " + location.placeId + " as hotspot")
             location.isHotspot = true
             location.saveInBackground()
+            dialog?.dismiss()
         }
         alertDialogBuilder.setNegativeButton("No") { dialog, which ->
             Log.i(TAG, "Marking location " + location.placeId + " as not a hotspot")
             location.isHotspot = false
             location.saveInBackground()
+            dialog?.dismiss()
         }
         alertDialogBuilder.setNeutralButton("Cancel") { dialog, which -> dialog?.dismiss()}
         return alertDialogBuilder.create()

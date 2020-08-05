@@ -59,6 +59,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val PERCENT_CHANGE_THRESHOLD = 3
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
+    private var notify = true
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
     private var ivArrow: ImageView? = null
@@ -75,6 +76,10 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
     private val UPDATE_INTERVAL: Long = 30000  // Every 30 seconds.
     private val FASTEST_UPDATE_INTERVAL: Long = 10000 // Every 10 seconds
     private val MAX_WAIT_TIME = UPDATE_INTERVAL * 2 // Every 2 minutes.
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, parent, false)
@@ -122,7 +127,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             // Location is ready to be passed to news api
             mViewModel?.getLocationAsLocation(newLocation)
             // TODO Uncomment this when I wanna make news calls
-            mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
+            //mViewModel?.getCovidNews(newLocation, getString(R.string.covid_news_key));
         }
 
         // Listen for JSON location to be put
@@ -160,8 +165,13 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         val finalLocationObserver: Observer<com.example.covidnow.models.Location> = Observer<com.example.covidnow.models.Location> {
             Log.i(TAG, "Location received from view model as Location")
             if (mViewModel?.getFinalLocation()?.value?.isHotspot == true) {
-                // Show user alert dialog that this is a hotspot
-                showHotspotAlertDialog(mViewModel?.getFinalLocation()?.value as Location)
+                if (notify) {
+                    // Show user alert dialog that this is a hotspot
+                    showHotspotAlertDialog(mViewModel?.getFinalLocation()?.value as Location)
+                    // Only notify them once for this session
+                    notify = false
+                }
+
             }
             btnQuickReview?.setOnClickListener(View.OnClickListener {
                 Log.i(TAG, "Quick Review button clicked!")

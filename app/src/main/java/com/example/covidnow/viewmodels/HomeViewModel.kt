@@ -26,8 +26,11 @@ import java.util.*
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var caseCount: MutableLiveData<String>? = null
     private var allArticles: MutableLiveData<List<Article>>? = null
+    private var caseHistory: MutableLiveData<List<Pair<String, Int>>>? = null
     private var jsonLocation: MutableLiveData<JSONObject>? = null
     private var finalLocation: MutableLiveData<Location>? = null
+    private var changeInCases: Float? = null
+    private var stateName: String? = null
     private val newsRepository: NewsRepository = NewsRepository()
     private val parseRepository: ParseRepository = ParseRepository()
     private val geocodingRepository: GeocodingRepository = GeocodingRepository()
@@ -145,15 +148,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     Log.i(TAG, "News Response: $json")
                     try {
+                        val stats = json.jsonObject.getJSONObject("stats")
                         // Format number of cases
-                        val caseNumber =  NumberFormat.getInstance().format(Integer.parseInt(json.jsonObject.getJSONObject("stats")
+                        val caseNumber =  NumberFormat.getInstance().format(Integer.parseInt(stats
                                 .getString("totalConfirmedCases")))
 
                         // Format the state/province + case count string
                         val cases = stateInfo.second.toString() + CASE_COUNT_STR + caseNumber
-
+                        stateName = stateInfo.second.toString()
                         // Post case value to case count
                         caseCount?.postValue(cases)
+                        val history = stats.getJSONArray("history")
+                        processHistory(history)
                     } catch (e: JSONException) {
                         e.printStackTrace()
                         Log.i(TAG, "Error retrieving stats for current location")
@@ -192,6 +198,38 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun processHistory(history: JSONArray) {
+        var lastWeekData = 1
+        var change = 0
+        // Save data as date, case count pairs
+        val historicalData = ArrayList<Pair<String, Int>>()
+        // Get past week of data
+        for (i in 0 until CASE_HISTORY_LIMIT) {
+            // Get from the end of the list (most recent)
+            if (history.length() - 1 - i >= 0) {
+                // There's enough data left
+                val pastDay = history.getJSONObject(history.length() - 1 - i)
+                // TODO change to simple date
+                val date = pastDay.getString("date").substring(5, 10)
+                val cases = pastDay.getInt("confirmed")
+                if (i == 0) {
+                    // Most recent data
+                    change += cases
+                } else if (i == CASE_HISTORY_LIMIT - 1) {
+                    // Last week's data
+                    change -= cases
+                    lastWeekData = cases
+                }
+                historicalData.add(Pair.create(date, cases))
+            } else {
+                break
+            }
+        }
+        // Calculate percent change
+        changeInCases = change.toFloat() / lastWeekData.toFloat()
+        // Flip history order
+        caseHistory?.postValue(historicalData.reversed())
+    }
 
 
     @Throws(JSONException::class)
@@ -225,6 +263,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             finalLocation = MutableLiveData()
         }
         return finalLocation as MutableLiveData<Location>
+    }
+
+
+    fun getCaseHistory(): LiveData<List<Pair<String, Int>>> {
+        if (caseHistory == null) {
+            caseHistory = MutableLiveData()
+        }
+        return caseHistory as MutableLiveData<List<Pair<String, Int>>>
     }
 
     fun getAllArticles(): LiveData<List<Article>> {
@@ -276,9 +322,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         parseRepository.giveUserMessagesObject(currentUser)
     }
 
+    fun getStateName(): String? {
+        return stateName
+    }
+
+    fun getChangeInCases(): Float? {
+        return changeInCases
+    }
+
     companion object {
         private const val TAG = "HomeViewModel"
         const val USER_HISTORY_LIMIT = 50
+        const val CASE_HISTORY_LIMIT = 7
         const val RECORDING_TIME_LIMIT = 0
         const val CASE_COUNT_STR = " Case Count: "
     }

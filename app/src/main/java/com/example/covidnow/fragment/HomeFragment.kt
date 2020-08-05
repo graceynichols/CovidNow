@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -32,6 +33,15 @@ import com.example.covidnow.models.Location
 import com.example.covidnow.receivers.LocationUpdatesBroadcastReceiver
 import com.example.covidnow.repository.ParseRepository
 import com.example.covidnow.viewmodels.HomeViewModel
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.AxisBase
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -40,15 +50,23 @@ import com.parse.ParseUser
 import com.parse.SaveCallback
 import org.json.JSONObject
 import org.parceler.Parcels
+import java.math.BigDecimal
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.round
 
 
-class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
+class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
+    private val PERCENT_CHANGE_THRESHOLD = 3
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
+    private var ivArrow: ImageView? = null
+    private var ivInfo: ImageView? = null
+    private var tvPercentChange: TextView? = null
     private var btnQuickReview: FloatingActionButton? = null
+    private var chart: LineChart? = null
     private var pbLoading: ProgressBar? = null
     private var mViewModel: HomeViewModel? = null
     private val permissionFineLocation= Manifest.permission.ACCESS_FINE_LOCATION
@@ -82,6 +100,11 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         tvCases = view.findViewById(R.id.tvCases)
         pbLoading = view.findViewById(R.id.pbLoading)
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
+        ivArrow = view.findViewById(R.id.ivArrow)
+        tvPercentChange = view.findViewById(R.id.tvPercentChange)
+        ivInfo = view.findViewById(R.id.ivInfo)
+        chart = view.findViewById(R.id.chart)
+        chart?.setNoDataText("")
 
         // Initialize recyclerview
         initializeRvArticles(rvArticles)
@@ -114,6 +137,15 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         // Listen for case count to be put by NewsRepo
         mViewModel?.getCaseCount()?.observe(viewLifecycleOwner, caseCountObserver)
 
+        // Listen for case history from news API
+        val caseHistoryObserver: Observer<List<Pair<String, Int>>> = Observer<List<Pair<String, Int>>> { caseHistory -> // Case count is ready to be shown
+            Log.i(TAG, "case history received from View Model")
+            // Chart past cases
+            setupChart(caseHistory)
+        }
+        // Listen for case count to be put by NewsRepo
+        mViewModel?.getCaseHistory()?.observe(viewLifecycleOwner, caseHistoryObserver)
+
         // Listen for news to be ready to bind to recyclerview
         val newsObserver: Observer<List<Article>> = Observer { news -> // News is ready to be added to recyclerview
             Log.i(TAG, "News received from View Model")
@@ -139,6 +171,82 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         }
         // Listen for news to be ready to post on home screen
         mViewModel?.getFinalLocation()?.observe(viewLifecycleOwner, finalLocationObserver)
+    }
+
+    private fun setupChart(caseHistory: List<Pair<String, Int>>) {
+        if (pbLoading?.visibility == View.GONE) {
+            pbLoading?.visibility = View.VISIBLE
+        }
+        val dates = ArrayList<String>()
+        val entries = ArrayList<Entry>()
+        // Loop through case history
+        for (i in caseHistory.indices) {
+            // TODO add date instead of index
+            caseHistory[i].first?.let { dates.add(it) }
+            caseHistory[i].second?.toFloat()?.let { Entry(i.toFloat(), it) }?.let { entries.add(it) }
+        }
+
+        // Make dates the X axis label
+        val formatter: ValueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String? {
+                return dates.get(value.toInt())
+            }
+        }
+        val xAxis: XAxis = chart?.xAxis as XAxis
+        xAxis.granularity = 1f // minimum axis-step (interval) is 1
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        // Style chart
+        chart?.description?.text = "Cases in " + mViewModel?.getStateName() + " for the past week"
+        chart?.description?.textSize = 10F
+
+        chart?.axisRight?.setDrawLabels(false)
+
+        xAxis.valueFormatter = formatter
+
+        // Assign data to chart
+        val dataSet = LineDataSet(entries, "# of Cases")
+        dataSet.valueTextSize = 0f
+        val lineData = LineData(dataSet)
+        chart?.data = lineData
+        // Refresh chart
+        chart?.invalidate()
+
+        // Set "percent change" on top
+        setupPercentChange()
+
+        pbLoading?.visibility = View.GONE
+    }
+
+    private fun setupPercentChange() {
+        val suffix = "% from last week"
+        var dialogText = "This state is not a hotspot - there has been less than a 3% increase in cases this week"
+        var finalText = ""
+        // Round to 3 decimal points
+        val percentChange = round((mViewModel?.getChangeInCases() as Float) * 1000.0) / 1000.0
+        if (percentChange < 0) {
+            // Cases are down!
+            finalText = "Down " + abs(percentChange) + suffix
+            // Show down arrow
+            ivArrow?.setImageResource(R.drawable.ic_arrow_circle_down_black_18dp)
+        } else {
+            // Cases are up :(
+            finalText = "Up $percentChange$suffix"
+            // Show up arrow
+            ivArrow?.setImageResource(R.drawable.ic_arrow_circle_up_black_18dp)
+
+        }
+        if (percentChange > PERCENT_CHANGE_THRESHOLD) {
+            Log.i(TAG, "This state is a hotspot")
+            // Make case count red
+            tvCases?.setBackgroundColor(resources.getColor(R.color.hotspot_red))
+            dialogText = "This state is a hotspot - there has been over a 3% increase in cases this week"
+        }
+        tvPercentChange?.text = finalText
+        ivInfo?.setOnClickListener {
+            Log.i(TAG, "Info button clicked")
+            Toast.makeText(context, dialogText, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun showAlertDialog(location: Location) {
@@ -203,7 +311,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
              Log.i(TAG, "Background permissions granted")
                 createLocationRequest()
             // TODO uncomment if you want location updates
-            //mFusedLocationClient?.let { requestLocationUpdates(it) }
+            mFusedLocationClient?.let { requestLocationUpdates(it) }
         }
     }
 
@@ -243,7 +351,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-
     private fun requestLocationUpdates(locationClient: FusedLocationProviderClient) {
         try {
             Log.i(TAG, "Starting location updates")
@@ -254,7 +361,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             e.printStackTrace()
         }
     }
-
 
     private fun requestPermissions(){
         Log.i(TAG, "Requesting permissions")
@@ -300,6 +406,5 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         private const val TAG = "HomeFragment"
         private var adapterArticles: MutableList<Article>? = null
         private var adapter: ArticlesAdapter? = null
-
     }
 }

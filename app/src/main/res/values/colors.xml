@@ -7,4 +7,5 @@
     <color name="hotspot_red">#ff0037</color>
     <color name="safe_green">#4cc244</color>
     <color name="darkest_gray">#363233</color>
+    <color name="white">#FFFF</color>
 </resources>

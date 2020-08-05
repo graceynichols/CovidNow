@@ -56,12 +56,14 @@ import kotlin.math.abs
 import kotlin.math.round
 
 
-class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
+class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
+    private val PERCENT_CHANGE_THRESHOLD = 3
     private var rvArticles: RecyclerView? = null
     private var mLocationRequest: LocationRequest? = null
     private val fragment: Fragment = this
     private var tvCases: TextView? = null
     private var ivArrow: ImageView? = null
+    private var ivInfo: ImageView? = null
     private var tvPercentChange: TextView? = null
     private var btnQuickReview: FloatingActionButton? = null
     private var chart: LineChart? = null
@@ -100,6 +102,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         btnQuickReview = view.findViewById(R.id.btnQuickReview)
         ivArrow = view.findViewById(R.id.ivArrow)
         tvPercentChange = view.findViewById(R.id.tvPercentChange)
+        ivInfo = view.findViewById(R.id.ivInfo)
         chart = view.findViewById(R.id.chart)
         chart?.setNoDataText("")
 
@@ -217,21 +220,33 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
 
     private fun setupPercentChange() {
         val suffix = "% from last week"
+        var dialogText = "This state is not a hotspot - there has been less than a 3% increase in cases this week"
         var finalText = ""
         // Round to 3 decimal points
         val percentChange = round((mViewModel?.getChangeInCases() as Float) * 1000.0) / 1000.0
         if (percentChange < 0) {
             // Cases are down!
             finalText = "Down " + abs(percentChange) + suffix
-            // Show green down arrow
+            // Show down arrow
             ivArrow?.setImageResource(R.drawable.ic_arrow_circle_down_black_18dp)
         } else {
             // Cases are up :(
             finalText = "Up $percentChange$suffix"
-            // Show red up arrow
+            // Show up arrow
             ivArrow?.setImageResource(R.drawable.ic_arrow_circle_up_black_18dp)
+
+        }
+        if (percentChange > PERCENT_CHANGE_THRESHOLD) {
+            Log.i(TAG, "This state is a hotspot")
+            // Make case count red
+            tvCases?.setBackgroundColor(resources.getColor(R.color.hotspot_red))
+            dialogText = "This state is a hotspot - there has been over a 3% increase in cases this week"
         }
         tvPercentChange?.text = finalText
+        ivInfo?.setOnClickListener {
+            Log.i(TAG, "Info button clicked")
+            Toast.makeText(context, dialogText, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun showAlertDialog(location: Location) {
@@ -296,7 +311,7 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
              Log.i(TAG, "Background permissions granted")
                 createLocationRequest()
             // TODO uncomment if you want location updates
-            //mFusedLocationClient?.let { requestLocationUpdates(it) }
+            mFusedLocationClient?.let { requestLocationUpdates(it) }
         }
     }
 
@@ -391,6 +406,5 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
         private const val TAG = "HomeFragment"
         private var adapterArticles: MutableList<Article>? = null
         private var adapter: ArticlesAdapter? = null
-
     }
 }

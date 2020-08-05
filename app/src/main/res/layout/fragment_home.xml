@@ -43,14 +43,14 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:background="#DFDCDC"
-        android:backgroundTint="@color/light_blue"
+        android:backgroundTint="@color/safe_green"
         android:elevation="4dp"
         android:fontFamily="serif"
         android:padding="8dp"
-        android:textAlignment="center"
+        android:textAlignment="viewStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textColor="@color/common_google_signin_btn_text_dark_default"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         tools:text="Atlanta Case Count: 1,000" />
 
@@ -87,4 +87,15 @@
         android:layout_toEndOf="@+id/ivArrow"
         android:textSize="18sp"
         tools:text="% change" />
+
+    <ImageView
+        android:id="@+id/ivInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:elevation="5dp"
+        android:src="@drawable/ic_info_24px" />
 </RelativeLayout>

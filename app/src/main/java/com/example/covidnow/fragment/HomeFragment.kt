@@ -94,7 +94,6 @@ class HomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListe
             Log.i(TAG, "Getting current location")
             getMyLocation()
         } else {
-            Toast.makeText(context, "Permission needed to get news for your area", Toast.LENGTH_SHORT).show()
             requestPermissions()
         }
         // Assign view model class
